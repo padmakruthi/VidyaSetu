@@ -12,7 +12,8 @@ import {
   Building2,
   CreditCard,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  Award
 } from 'lucide-react';
 
 interface StatusStepperProps {
@@ -32,21 +33,23 @@ export function StatusStepper({
   hasDeficiency = false,
   pfmsUtr
 }: StatusStepperProps) {
-  // 5-Stage Lifecycle Audit Trail from PPT Slide 2
+  // 6-Stage Lifecycle Audit Trail from Technical Architecture
   const lifecycleStages: { id: LifecycleStage; label: string; icon: any }[] = [
-    { id: 'IDENTITY_VERIFIED', label: 'IDENTITY VERIFIED', icon: ShieldCheck },
-    { id: 'DOCS_VALIDATED', label: 'DOCS VALIDATED', icon: FileCheck },
-    { id: 'DATA_CROSS_CHECKED', label: 'DATA CROSS-CHECKED', icon: Sparkles },
-    { id: 'FUNDS_TRACKED', label: 'FUNDS TRACKED', icon: CreditCard },
-    { id: 'RENEWAL_MONITORED', label: 'RENEWAL MONITORED', icon: RefreshCw }
+    { id: 'IDENTITY_VERIFIED', label: '1. IDENTITY VERIFIED', icon: ShieldCheck },
+    { id: 'DOCS_VALIDATED', label: '2. DOCS VALIDATED', icon: FileCheck },
+    { id: 'DATA_CROSS_CHECKED', label: '3. DATA CROSS-CHECKED', icon: Sparkles },
+    { id: 'ELIGIBILITY_RANKED', label: '4. ELIGIBILITY & RANKED', icon: Award },
+    { id: 'FUNDS_TRACKED', label: '5. FUNDS DISBURSED', icon: CreditCard },
+    { id: 'AUDIT_COMPLIANCE', label: '6. AUDIT & COMPLIANCE', icon: RefreshCw }
   ];
 
   const stageOrder: LifecycleStage[] = [
     'IDENTITY_VERIFIED',
     'DOCS_VALIDATED',
     'DATA_CROSS_CHECKED',
+    'ELIGIBILITY_RANKED',
     'FUNDS_TRACKED',
-    'RENEWAL_MONITORED'
+    'AUDIT_COMPLIANCE'
   ];
 
   const currentStageIndex = stageOrder.indexOf(lifecycleStage);
@@ -100,7 +103,7 @@ export function StatusStepper({
           <div className="flex items-center space-x-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-300">
-              AUDIT TRAIL (SIH Sovereign Lifecycle Protocol)
+              AUDIT TRAIL (Sovereign Lifecycle Protocol)
             </span>
           </div>
           <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800">
@@ -108,8 +111,8 @@ export function StatusStepper({
           </span>
         </div>
 
-        {/* 5-Stage Ribbon */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {/* 6-Stage Ribbon */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {lifecycleStages.map((stage, idx) => {
             const isCompleted = idx <= currentStageIndex;
             const isCurrent = idx === currentStageIndex;

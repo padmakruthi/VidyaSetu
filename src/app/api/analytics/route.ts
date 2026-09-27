@@ -67,9 +67,9 @@ export async function GET() {
       selectedCount,
       deficiencyCount,
       underScrutinyCount,
-      avgProcessingDaysAi: 4.2,
+      avgProcessingDaysAi: 2.0,
       avgProcessingDaysManual: 45.0,
-      turnaroundImprovementPct: 90.6,
+      turnaroundImprovementPct: 95.6,
       aiAutoMatchRate: 94.2,
       totalDisbursedCrores: 57.4,
       dbtSuccessRate: 99.8

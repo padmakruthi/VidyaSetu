@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useLanguage } from '@/components/LanguageContext';
 import {
   BarChart3,
@@ -19,9 +20,11 @@ import {
 } from 'lucide-react';
 
 export default function AnalyticsDashboardPage() {
-  const { lang } = useLanguage();
+  const { currentUser, lang } = useLanguage();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  const isAuthorized = currentUser && currentUser.role === 'ADMIN';
 
   const fetchAnalytics = async () => {
     setLoading(true);
@@ -39,8 +42,29 @@ export default function AnalyticsDashboardPage() {
   };
 
   useEffect(() => {
-    fetchAnalytics();
-  }, []);
+    if (isAuthorized) {
+      fetchAnalytics();
+    }
+  }, [isAuthorized]);
+
+  // Role-Match Enforcement Guard (Requirement #3)
+  if (!isAuthorized) {
+    return (
+      <div className="max-w-4xl mx-auto my-12 p-8 bg-white border border-slate-200 rounded-2xl shadow-lg text-center space-y-4">
+        <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto" />
+        <h2 className="text-2xl font-black text-slate-900">Access Restricted: MoTA Director Persona</h2>
+        <p className="text-xs text-slate-600">
+          Executive Analytics dashboard is restricted to MoTA Directors & Ministry Administrators (Smt. Ananya Sen, IAS).
+        </p>
+        <Link
+          href={`/login?redirect=${encodeURIComponent('/admin/analytics')}`}
+          className="inline-block bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md"
+        >
+          Sign In as MoTA Admin
+        </Link>
+      </div>
+    );
+  }
 
   if (loading || !data) {
     return (
@@ -63,17 +87,14 @@ export default function AnalyticsDashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xs font-mono font-bold text-amber-400 bg-amber-950/80 px-2.5 py-0.5 rounded border border-amber-800">
-                EXECUTIVE ANALYTICS • SIH 2026
-              </span>
-              <span className="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700 font-mono">
-                Team: parllaxx_24951A05M7
+                EXECUTIVE ANALYTICS • MOTA DASHBOARD
               </span>
             </div>
             <h1 className="text-2xl font-black mt-2">
               MoTA Public Scheme Delivery & Impact Dashboard
             </h1>
             <p className="text-xs text-slate-300 mt-1">
-              Real-time monitoring of 48-Hour SLAs, ₹1.80 Cr fiscal savings, and direct PFMS DBT transfers.
+              Real-time monitoring of 48-Hour SLAs, Est. ₹1.80 Cr / year fiscal savings, and direct PFMS DBT transfers.
             </p>
           </div>
 
@@ -90,15 +111,15 @@ export default function AnalyticsDashboardPage() {
         <div className="mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-slate-800/80 p-4.5 rounded-xl border border-slate-700">
             <span className="text-xs text-slate-400 block mb-1">Turnaround Acceleration</span>
-            <div className="text-2xl font-black text-emerald-400">25x Faster</div>
+            <div className="text-2xl font-black text-emerald-400">22.5x Faster</div>
             <div className="text-[11px] text-slate-400 mt-1">
-              4.2 Days (vs 45-60 Day manual delays)
+              2.0 Days (vs 45-Day manual delays)
             </div>
           </div>
 
           <div className="bg-slate-800/80 p-4.5 rounded-xl border border-slate-700">
             <span className="text-xs text-slate-400 block mb-1">Direct Annual Savings</span>
-            <div className="text-2xl font-black text-amber-400">₹1.80 Crore / yr</div>
+            <div className="text-2xl font-black text-amber-400">Est. ₹1.80 Cr / year</div>
             <div className="text-[11px] text-slate-400 mt-1">
               Manual third-party agencies eliminated
             </div>
@@ -108,7 +129,7 @@ export default function AnalyticsDashboardPage() {
             <span className="text-xs text-slate-400 block mb-1">PFMS DBT Sanctioned</span>
             <div className="text-2xl font-black text-blue-400">₹{summary.totalDisbursedCrores} Cr</div>
             <div className="text-[11px] text-slate-400 mt-1">
-              100% Leakage Prevention via DBT
+              Near-Zero Leakage via DBT
             </div>
           </div>
 
@@ -134,14 +155,14 @@ export default function AnalyticsDashboardPage() {
               <p className="text-xs text-slate-500">Legacy Manual Scrutiny vs VidyaSetu Sovereign AI Rail</p>
             </div>
             <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded">
-              -90.6% Latency Drop
+              -95.6% Latency Drop
             </span>
           </div>
 
           <div className="space-y-4 pt-2">
             <div>
               <div className="flex justify-between text-xs font-bold mb-1">
-                <span className="text-slate-700">Legacy Manual Scrutiny Baseline (45–60 Days)</span>
+                <span className="text-slate-700">Legacy Manual Scrutiny Baseline (45 Days)</span>
                 <span className="text-rose-700 font-mono">45.0 Days</span>
               </div>
               <div className="h-6 w-full bg-slate-100 rounded-full overflow-hidden p-1">
@@ -152,10 +173,10 @@ export default function AnalyticsDashboardPage() {
             <div>
               <div className="flex justify-between text-xs font-bold mb-1">
                 <span className="text-slate-900">VidyaSetu 48-Hour AI Spotlight Pipeline</span>
-                <span className="text-emerald-700 font-mono font-black">4.2 Days (25x Faster)</span>
+                <span className="text-emerald-700 font-mono font-black">2.0 Days (22.5x Faster)</span>
               </div>
               <div className="h-6 w-full bg-slate-100 rounded-full overflow-hidden p-1">
-                <div className="h-full bg-emerald-600 rounded-full w-[12%]" />
+                <div className="h-full bg-emerald-600 rounded-full w-[4.4%]" />
               </div>
             </div>
           </div>

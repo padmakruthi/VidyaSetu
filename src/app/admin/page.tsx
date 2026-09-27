@@ -29,6 +29,8 @@ export default function AdminQueuePage() {
   const [filterRisk, setFilterRisk] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
+  const isAuthorized = currentUser && ['SCRUTINY_OFFICER', 'ADMIN'].includes(currentUser.role);
+
   const fetchApplications = async () => {
     setLoading(true);
     try {
@@ -45,8 +47,47 @@ export default function AdminQueuePage() {
   };
 
   useEffect(() => {
-    fetchApplications();
-  }, []);
+    if (isAuthorized) {
+      fetchApplications();
+    }
+  }, [isAuthorized]);
+
+  // Role-Match Enforcement Guard (Requirement #3)
+  if (!currentUser || currentUser.role === 'APPLICANT') {
+    return (
+      <div className="max-w-4xl mx-auto my-12 p-8 bg-white border border-slate-200 rounded-2xl shadow-lg text-center space-y-4">
+        <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto" />
+        <h2 className="text-2xl font-black text-slate-900">Access Restricted</h2>
+        <p className="text-xs text-slate-600">
+          This Scrutiny Verification Queue is restricted to authorized Scrutiny Nodal Officers (Dr. Rajeshwar Rao).
+        </p>
+        <Link
+          href={`/login?redirect=${encodeURIComponent('/admin')}`}
+          className="inline-block bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md"
+        >
+          Sign In as Scrutiny Officer
+        </Link>
+      </div>
+    );
+  }
+
+  if (currentUser.role === 'SELECTION_COMMITTEE') {
+    return (
+      <div className="max-w-4xl mx-auto my-12 p-8 bg-white border border-blue-200 rounded-2xl shadow-lg text-center space-y-4">
+        <ShieldCheck className="w-12 h-12 text-blue-600 mx-auto" />
+        <h2 className="text-2xl font-black text-slate-900">Access Restricted: Selection Committee Persona</h2>
+        <p className="text-xs text-slate-600">
+          You are currently logged in as <strong>Prof. Kamala Tirkey (Selection Committee)</strong>. You do not have permission to access the Scrutiny Verification Queue.
+        </p>
+        <Link
+          href="/admin/selection"
+          className="inline-block bg-purple-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md"
+        >
+          Go to Your Dashboard: Selection Committee Merit List &rarr;
+        </Link>
+      </div>
+    );
+  }
 
   const filteredApps = applications.filter(app => {
     if (filterScheme !== 'ALL' && app.schemeCode !== filterScheme) return false;
@@ -136,7 +177,7 @@ export default function AdminQueuePage() {
               <span>Annual Fiscal Savings</span>
               <TrendingUp className="w-4 h-4 text-purple-400" />
             </div>
-            <div className="text-2xl font-black text-purple-300">₹1.80 Cr / yr</div>
+            <div className="text-2xl font-black text-purple-300">Est. ₹1.80 Cr / year</div>
             <div className="text-[11px] text-purple-200 mt-0.5">3rd-party scrutiny eliminated</div>
           </div>
         </div>

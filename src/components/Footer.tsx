@@ -16,11 +16,11 @@ export function Footer() {
           <div className="flex items-center space-x-2">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
             <span className="font-bold text-white text-xs tracking-wide">
-              Smart India Hackathon (SIH) 2026
+              Ministry of Tribal Affairs (MoTA)
             </span>
             <span className="text-slate-500">|</span>
             <span className="bg-amber-950/80 text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-800 text-[11px] font-mono font-bold">
-              Team: parllaxx_24951A05M7
+              Sovereign DPI Infrastructure
             </span>
           </div>
 
@@ -98,7 +98,7 @@ export function Footer() {
             <li>• LayoutLMv3 Multimodal Token Alignment</li>
             <li>• Hybrid Jaro-Winkler + Bhashini AI NLP</li>
             <li>• 30-Second Officer Spotlight UI</li>
-            <li>• 100% Leakage Prevention via PFMS DBT Rails</li>
+            <li>• Near-Zero Leakage via PFMS DBT Rails</li>
           </ul>
         </div>
 
@@ -127,8 +127,7 @@ export function Footer() {
       {/* Bottom Bar */}
       <div className="border-t border-slate-800 py-4 px-4 text-center text-[11px] text-slate-500">
         <p>
-          © 2026 Ministry of Tribal Affairs, Government of India. Prototype built by{' '}
-          <span className="text-amber-400 font-bold">parllaxx_24951A05M7</span> for Smart India Hackathon.
+          © 2026 Ministry of Tribal Affairs, Government of India. All rights reserved.
         </p>
       </div>
     </footer>

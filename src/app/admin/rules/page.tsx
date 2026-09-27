@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '@/components/LanguageContext';
 import { Scheme } from '@/lib/types';
+import Link from 'next/link';
 import {
   Sliders,
   ShieldCheck,
@@ -11,10 +12,12 @@ import {
   Globe2,
   GraduationCap,
   RefreshCw,
-  Sparkles
+  Sparkles,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function RulesConfigPage() {
+  const { currentUser } = useLanguage();
   const [schemes, setSchemes] = useState<Scheme[]>([]);
   const [selectedSchemeId, setSelectedSchemeId] = useState<string>('nfst');
   const [loading, setLoading] = useState<boolean>(true);
@@ -24,13 +27,16 @@ export default function RulesConfigPage() {
   const [rulesState, setRulesState] = useState({
     minPgMarksPercentage: 55,
     maxAge: 36,
-    maxAnnualFamilyIncome: 800000,
+    maxAnnualFamilyIncome: 600000,
     qualifyingExamRequired: true,
-    requiredExamName: 'UGC-NET / CSIR-NET / GATE',
+    requiredExamName: 'UGC-NET / CSIR-NET',
     femaleSubQuotaPercentage: 33,
     stipendAmountMonthly: 31000,
     annualContingency: 25000
   });
+
+  const isAuthorized = currentUser && ['SELECTION_COMMITTEE', 'ADMIN'].includes(currentUser.role);
+  const isReadOnly = currentUser?.role === 'SELECTION_COMMITTEE';
 
   const fetchSchemes = async () => {
     setLoading(true);
@@ -43,7 +49,7 @@ export default function RulesConfigPage() {
         setRulesState({
           minPgMarksPercentage: active.rules.minPgMarksPercentage,
           maxAge: active.rules.maxAge,
-          maxAnnualFamilyIncome: active.rules.maxAnnualFamilyIncome || 800000,
+          maxAnnualFamilyIncome: active.rules.maxAnnualFamilyIncome || 600000,
           qualifyingExamRequired: active.rules.qualifyingExamRequired,
           requiredExamName: active.rules.requiredExamName,
           femaleSubQuotaPercentage: active.rules.femaleSubQuotaPercentage,
@@ -59,8 +65,29 @@ export default function RulesConfigPage() {
   };
 
   useEffect(() => {
-    fetchSchemes();
-  }, [selectedSchemeId]);
+    if (isAuthorized) {
+      fetchSchemes();
+    }
+  }, [selectedSchemeId, isAuthorized]);
+
+  // Role-Match Enforcement Guard (Requirement #3)
+  if (!isAuthorized) {
+    return (
+      <div className="max-w-4xl mx-auto my-12 p-8 bg-white border border-slate-200 rounded-2xl shadow-lg text-center space-y-4">
+        <AlertTriangle className="w-12 h-12 text-rose-500 mx-auto" />
+        <h2 className="text-2xl font-black text-slate-900">Access Restricted</h2>
+        <p className="text-xs text-slate-600">
+          Configurable Eligibility Rules Engine is restricted to Selection Committee members (Prof. Kamala Tirkey) and MoTA Administrators (Smt. Ananya Sen, IAS).
+        </p>
+        <Link
+          href={`/login?redirect=${encodeURIComponent('/admin/rules')}`}
+          className="inline-block bg-amber-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs shadow-md"
+        >
+          Sign In to Access Rules Engine
+        </Link>
+      </div>
+    );
+  }
 
   const handleSave = async () => {
     setSaving(true);
@@ -132,6 +159,21 @@ export default function RulesConfigPage() {
         </div>
       ) : (
         <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+          {/* Read-Only Mode Banner for Selection Committee */}
+          {isReadOnly && (
+            <div className="bg-purple-50 border border-purple-200 text-purple-900 rounded-xl p-3.5 text-xs font-medium flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-purple-600 shrink-0" />
+                <span>
+                  <strong>View Mode (Read-Only):</strong> You are logged in as <strong>Prof. Kamala Tirkey (Selection Committee)</strong>. You can inspect active eligibility criteria and quotas. Rule modifications are reserved for MoTA Admin.
+                </span>
+              </div>
+              <span className="text-[10px] font-bold bg-purple-200/80 text-purple-900 px-2 py-0.5 rounded font-mono shrink-0">
+                Read-Only
+              </span>
+            </div>
+          )}
+
           <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
             <h2 className="text-base font-bold text-slate-900">
               {selectedSchemeId === 'nfst'
@@ -151,9 +193,10 @@ export default function RulesConfigPage() {
               </label>
               <input
                 type="number"
+                disabled={isReadOnly}
                 value={rulesState.minPgMarksPercentage}
                 onChange={e => setRulesState({ ...rulesState, minPgMarksPercentage: parseFloat(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none disabled:opacity-75 disabled:cursor-not-allowed"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">Current statutory floor: 55% ST</span>
             </div>
@@ -165,9 +208,10 @@ export default function RulesConfigPage() {
               </label>
               <input
                 type="number"
+                disabled={isReadOnly}
                 value={rulesState.maxAge}
                 onChange={e => setRulesState({ ...rulesState, maxAge: parseInt(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none disabled:opacity-75 disabled:cursor-not-allowed"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">Includes ST age relaxation (36 yrs)</span>
             </div>
@@ -179,12 +223,13 @@ export default function RulesConfigPage() {
               </label>
               <input
                 type="number"
+                disabled={isReadOnly}
                 value={rulesState.maxAnnualFamilyIncome}
                 onChange={e => setRulesState({ ...rulesState, maxAnnualFamilyIncome: parseFloat(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none disabled:opacity-75 disabled:cursor-not-allowed"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">
-                {selectedSchemeId === 'nos' ? '₹8,00,000 statutory cap' : 'Optional priority filter for NFST'}
+                {selectedSchemeId === 'nos' ? '₹6,00,000 statutory cap' : 'Optional priority filter for NFST'}
               </span>
             </div>
 
@@ -195,9 +240,10 @@ export default function RulesConfigPage() {
               </label>
               <input
                 type="number"
+                disabled={isReadOnly}
                 value={rulesState.femaleSubQuotaPercentage}
                 onChange={e => setRulesState({ ...rulesState, femaleSubQuotaPercentage: parseFloat(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-purple-700 outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-purple-700 outline-none disabled:opacity-75 disabled:cursor-not-allowed"
               />
               <span className="text-[10px] text-purple-700 font-semibold mt-1 block">Statutory floor: 33%</span>
             </div>
@@ -209,9 +255,10 @@ export default function RulesConfigPage() {
               </label>
               <input
                 type="number"
+                disabled={isReadOnly}
                 value={rulesState.stipendAmountMonthly}
                 onChange={e => setRulesState({ ...rulesState, stipendAmountMonthly: parseFloat(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-emerald-700 outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-emerald-700 outline-none disabled:opacity-75 disabled:cursor-not-allowed"
               />
               <span className="text-[10px] text-emerald-700 font-semibold mt-1 block">Disbursed via PFMS DBT rail</span>
             </div>
@@ -223,9 +270,10 @@ export default function RulesConfigPage() {
               </label>
               <input
                 type="number"
+                disabled={isReadOnly}
                 value={rulesState.annualContingency}
                 onChange={e => setRulesState({ ...rulesState, annualContingency: parseFloat(e.target.value) })}
-                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-xs font-bold text-slate-900 outline-none disabled:opacity-75 disabled:cursor-not-allowed"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">Books, fieldwork & equipment grant</span>
             </div>
@@ -240,27 +288,38 @@ export default function RulesConfigPage() {
               </span>
             ) : (
               <span className="text-xs text-slate-500">
-                Changes apply immediately to the Applicant Wizard and Merit Ranking matrix.
+                {isReadOnly
+                  ? 'View mode: Rules can only be modified by MoTA Admin.'
+                  : 'Changes apply immediately to the Applicant Wizard and Merit Ranking matrix.'}
               </span>
             )}
 
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span>Calibrating Rulebook...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  <span>Update Scheme Rules</span>
-                </>
-              )}
-            </button>
+            {isReadOnly ? (
+              <button
+                disabled
+                className="bg-slate-200 text-slate-500 px-6 py-2.5 rounded-xl text-xs font-bold cursor-not-allowed inline-flex items-center gap-2 border border-slate-300"
+              >
+                <span>Read-Only Mode (MoTA Admin Only)</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Calibrating Rulebook...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Update Scheme Rules</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
       )}

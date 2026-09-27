@@ -214,7 +214,7 @@ export function simulateDocumentOcr(
 
     case 'INCOME_CERTIFICATE': {
       const isNos = formData.qualifyingExam?.includes('GRE') || Boolean(formData.foreignUniversityName);
-      const isAboveCeiling = isNos && income > 800000;
+      const isAboveCeiling = isNos && income > 600000;
 
       return {
         documentType: docType,
@@ -243,7 +243,7 @@ export function simulateDocumentOcr(
             formValue: `₹ ${income.toLocaleString('en-IN')}`,
             jaroWinklerScore: 1.0,
             boundingBox: { x: 95, y: 210, width: 280, height: 35 },
-            remarks: isAboveCeiling ? 'Exceeds NOS statutory limit of ₹8,00,000' : 'Within eligible DBT threshold'
+            remarks: isAboveCeiling ? 'Exceeds NOS statutory limit of ₹6,00,000' : 'Within eligible DBT threshold'
           },
           {
             fieldName: 'financialYear',
@@ -258,7 +258,7 @@ export function simulateDocumentOcr(
         aiNotes: [
           'EDGE BLUR GATE: Laplacian variance score is 138.2 (Passes ≥ 100 threshold).',
           isAboveCeiling
-            ? 'Warning: Income exceeds ₹8.00 Lakhs ceiling for NOS scheme. Officer scrutiny required.'
+            ? 'Warning: Income exceeds ₹6.00 Lakhs ceiling for NOS scheme. Officer scrutiny required.'
             : 'Income document verified from competent Sub-Divisional Magistrate office.'
         ]
       };

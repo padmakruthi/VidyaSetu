@@ -11,6 +11,7 @@ export interface User {
   district?: string;
   community?: string; // Tribe e.g., Santhal, Gond, Bhil, Munda, Khasi, Bodo
   avatar?: string;
+  passwordHash?: string;
 }
 
 export type ApplicationStatus =
@@ -24,13 +25,14 @@ export type ApplicationStatus =
   | 'PROVISIONALLY_SELECTED'
   | 'REJECTED';
 
-// 5-Stage Lifecycle Audit Trail from PPT Slide 2
+// 6-Stage Sovereign Lifecycle Audit Trail
 export type LifecycleStage =
   | 'IDENTITY_VERIFIED'
   | 'DOCS_VALIDATED'
   | 'DATA_CROSS_CHECKED'
+  | 'ELIGIBILITY_RANKED'
   | 'FUNDS_TRACKED'
-  | 'RENEWAL_MONITORED';
+  | 'AUDIT_COMPLIANCE';
 
 export interface ExtractedField {
   fieldName: string;
@@ -102,7 +104,7 @@ export interface VerificationLog {
 export interface SchemeRule {
   minPgMarksPercentage: number;
   maxAge: number;
-  maxAnnualFamilyIncome?: number; // e.g. 800000 for NOS, null for NFST
+  maxAnnualFamilyIncome?: number; // e.g. 600000 for NOS, null for NFST
   qualifyingExamRequired: boolean;
   requiredExamName: string;
   stQuotaPercentage: number;
@@ -154,23 +156,32 @@ export interface ApplicationFormData {
   district: string;
   pinCode: string;
   tribeCommunity: string;
+  isPvtg?: boolean; // Particularly Vulnerable Tribal Group (PVTG)
+  isPwd?: boolean; // Divyangjan / Persons with Disabilities (≥ 40% disability)
+  pwdDisabilityPercentage?: number;
   casteCertificateNo: string;
   casteIssuingAuthority: string;
   casteIssueDate: string;
   annualFamilyIncome: number;
   incomeCertificateNo: string;
+  incomeIssuingAuthority?: string;
 
   // Academic
-  ugDegree: string;
-  ugInstitute: string;
-  ugMarksPercentage: number;
-  pgDegree: string;
-  pgInstitute: string;
-  pgMarksPercentage: number;
-  qualifyingExam: string;
-  qualifyingExamRollNo: string;
-  qualifyingExamYear: string;
-  qualifyingExamPercentile: number;
+  ugDegree?: string;
+  ugInstitute?: string;
+  ugMarksPercentage?: number;
+  pgDegree?: string;
+  pgInstitute?: string;
+  pgMarksPercentage?: number;
+  qualifyingExam?: string;
+  qualifyingExamRollNo?: string;
+  qualifyingExamYear?: string;
+  qualifyingExamPercentile?: number;
+  qualifyingDegree?: string;
+  universityName?: string;
+  passingYear?: number;
+  qualifyingExamName?: string;
+  qualifyingExamScore?: number;
 
   // Scheme Specific: NFST
   phdEnrolledUniversity?: string;
@@ -178,6 +189,7 @@ export interface ApplicationFormData {
   phdGuideName?: string;
   phdRegistrationDate?: string;
   researchTopicTitle?: string;
+  isPremierInstitute?: boolean; // IIT / IIM / AIIMS / IISER / NIT
 
   // Scheme Specific: NOS
   foreignUniversityName?: string;
@@ -185,15 +197,21 @@ export interface ApplicationFormData {
   qsWorldRanking?: number;
   foreignCourseName?: string;
   ieltsOrGreScore?: string;
+  hasConfirmedOffer?: boolean; // Tier 1: Confirmed Admission Offer vs Tier 2: Exam Cleared Only
   passportNumber?: string;
   passportExpiryDate?: string;
   tuitionFeeRequestedInr?: number;
+  nosTargetUniversity?: string;
+  nosQsWorldRanking?: number;
+  nosOfferStatus?: string;
+  nosCourseDurationYears?: number;
 
   // Bank & PFMS DBT Details
   bankName: string;
-  bankAccountNumber: string;
+  bankAccountNumber?: string;
   bankIfscCode: string;
-  aadhaarLinkedBank: boolean;
+  aadhaarLinkedBank?: boolean;
+  bankAccountNo?: string;
   pfmsBeneficiaryCode?: string;
   pfmsUtrNumber?: string;
   dbtDisbursedDate?: string;
@@ -209,6 +227,8 @@ export interface Application {
   applicantTribe: string;
   applicantState: string;
   gender: 'MALE' | 'FEMALE' | 'OTHER';
+  isPvtg?: boolean;
+  isPwd?: boolean;
   status: ApplicationStatus;
   
   // 5-Stage Lifecycle Tracker (PPT Slide 2)
@@ -239,9 +259,36 @@ export interface Application {
   
   // PFMS Rail
   pfmsPaymentStatus?: 'NOT_INITIATED' | 'PFMS_VALIDATED' | 'DISBURSED';
-  
+
+  // Office Visit Slot Booking
+  bookedVisitSlot?: VisitSlotBooking;
+
   submittedAt: string;
   updatedAt: string;
+}
+
+export interface STWelfareOffice {
+  id: string;
+  name: string;
+  nameHi?: string;
+  state: string;
+  district: string;
+  address: string;
+  contactOfficer: string;
+  phone: string;
+}
+
+export interface VisitSlotBooking {
+  referenceNo: string;
+  appId: string;
+  applicantName: string;
+  officeId: string;
+  officeName: string;
+  officeAddress: string;
+  contactOfficer: string;
+  date: string; // YYYY-MM-DD
+  timeSlot: string; // e.g. "10:30 AM - 11:00 AM"
+  bookedAt: string;
 }
 
 export interface NotificationItem {

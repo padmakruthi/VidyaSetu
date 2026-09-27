@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       schemeId,
       schemeCode,
       schemeTitle,
-      applicantId: body.applicantId || 'user-arun',
+      applicantId: body.applicantId || `user-${Date.now()}`,
       applicantName: formData.fullName || 'Tribal Scholar',
       applicantTribe: formData.tribeCommunity || 'Santhal',
       applicantState: formData.state || 'Odisha',

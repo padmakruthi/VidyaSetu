@@ -10,10 +10,10 @@
 Currently, Ministry of Tribal Affairs (MoTA) schemes like **National Fellowship for Scheduled Tribes (NFST)** and **National Overseas Scholarship (NOS)** suffer from 45–60 day clerical backlogs, repeated blurry upload rejection loops, and missed international admission/visa intake windows.
 
 **VidyaSetu** resolves this through an integrated zero-trust digital bridge:
-- 🚀 **48-Hour Decision SLA (25x Faster Processing):** Reduced from typical 45–60 day manual delays down to 4.2 days.
+- 🚀 **48-Hour Decision SLA (22.5x Faster Processing):** Reduced from typical 45-day manual delays down to 2.0 days (48 hours).
 - 📸 **Zero Blurry Rejections:** Instant in-browser OpenCV/WASM edge check (`Laplacian Variance ≥ 100` passes, `< 100` prompts retake).
 - ✈️ **Zero Missed Intakes:** Foreign university and visa cut-offs protected for ST scholars (Imperial College, UBC, etc.).
-- 💰 **₹1.80 Crore Saved / Year:** Direct annual fiscal savings by eliminating third-party manual scrutiny vendor agencies.
+- 💰 **Est. ₹1.80 Cr / year Saved:** Direct annual fiscal savings by eliminating third-party manual scrutiny vendor agencies.
 - 🔒 **DPDP Act 2023 Compliant & Strict Safeguard:** Automated sensitive ID masking (`XXXX-XXXX-4921`), AES-256 encryption, and **Strict Policy: Zero Autonomous Rejections (Human-In-The-Loop Safeguard)**.
 
 ---
@@ -35,7 +35,7 @@ The platform enforces the 5-stage sovereign pipeline on every application:
 | **Client Edge AI** | WASM / Canvas Laplacian Variance Filter | Browser-side blur & Image Quality Assessment (IQA) before upload (`Var ≥ 100`) |
 | **NLP / ML** | LayoutLMv3 Architecture | Multimodal token alignment on document layout & field extraction |
 | **Phonetic Matching** | Jaro-Winkler + Bhashini AI | Hybrid phonetic NLP mapping regional tribal transliterations automatically (`> 92%`) |
-| **Disbursement Rail**| PFMS DBT Rails | Direct Benefit Transfer into Aadhaar-linked bank accounts (100% leakage prevention) |
+| **Disbursement Rail**| PFMS DBT Rails | Direct Benefit Transfer into Aadhaar-linked bank accounts (Near-Zero Leakage) |
 
 ---
 
@@ -46,7 +46,7 @@ For hackathon evaluation, click any demo persona in the top header or login scre
 3. **Vipin Kumar Gond (Applicant - Deficiency Demo):** Gond tribe, MP. Has an outdated/blurry Income Certificate flagged. Click **"Re-Upload Valid Certificate (1-Click Fix)"** to test instant real-time resolution!
 4. **Dr. Rajeshwar Rao (Nodal Scrutiny Officer):** Reviews queue with AI risk scores; operates the 30-Second Dual-Pane Spotlight Review UI.
 5. **Prof. Kamala Tirkey (Selection Committee Member):** Merit-based ranking matrix, 33% female sub-quota tracking, and audited Human Override.
-6. **Smt. Ananya Sen, IAS (MoTA Director / Admin):** Executive Analytics, ₹1.80 Cr savings tracking, and Zero-Code Scheme Rulebook Engine.
+6. **Smt. Ananya Sen, IAS (MoTA Director / Admin):** Executive Analytics, Est. ₹1.80 Cr / year savings tracking, and Zero-Code Scheme Rulebook Engine.
 
 ---
 
@@ -82,7 +82,7 @@ Visit **`http://localhost:3000`** in your browser.
 - `/admin/review/[id]` — Dual-pane Spotlight UI review screen with zoomable document viewer and field comparison.
 - `/admin/selection` — Selection Committee merit ranking matrix, quota counters, and human override with justification notes.
 - `/admin/rules` — Configurable zero-code scheme eligibility rulebook engine.
-- `/admin/analytics` — Executive MoTA impact analytics with 25x turnaround speedup and state-wise charts.
+- `/admin/analytics` — Executive MoTA impact analytics with 22.5x turnaround speedup and state-wise charts.
 - `/login` — Accessible bilingual login with 1-click demo persona switcher and simulated mobile OTP.
 
 ---

@@ -20,16 +20,16 @@ import {
 import Link from 'next/link';
 
 function TrackContent() {
-  const { t, lang } = useLanguage();
+  const { t, lang, currentUser } = useLanguage();
   const searchParams = useSearchParams();
-  const initialId = searchParams.get('id') || 'MOTA-NFST-2025-0104';
+  const urlParamId = searchParams.get('id');
 
-  const [searchId, setSearchId] = useState<string>(initialId);
+  const [searchId, setSearchId] = useState<string>(urlParamId || '');
   const [application, setApplication] = useState<Application | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchApplication = async (id: string) => {
+  const fetchApplicationById = async (id: string) => {
     setLoading(true);
     setError(null);
     try {
@@ -49,16 +49,69 @@ function TrackContent() {
     }
   };
 
-  useEffect(() => {
-    if (initialId) {
-      fetchApplication(initialId);
+  const loadInitialTracker = async () => {
+    setLoading(true);
+    setError(null);
+
+    // 1. If an explicit ?id= query param is provided, load that exact application ID
+    if (urlParamId) {
+      fetchApplicationById(urlParamId);
+      return;
     }
-  }, [initialId]);
+
+    // 2. If a student is logged in, check if they have submitted any applications
+    if (currentUser && currentUser.role === 'APPLICANT') {
+      try {
+        const res = await fetch(`/api/applications?applicantId=${currentUser.id}`);
+        const data = await res.json();
+        let userApps: Application[] = [];
+
+        if (data.success && data.applications.length > 0) {
+          userApps = data.applications;
+        } else if (currentUser.email) {
+          const allRes = await fetch('/api/applications');
+          const allData = await allRes.json();
+          if (allData.success) {
+            userApps = allData.applications.filter(
+              (a: Application) =>
+                a.applicantId === currentUser.id ||
+                (a.formData?.emailAddress &&
+                  a.formData.emailAddress.toLowerCase().trim() === currentUser.email.toLowerCase().trim())
+            );
+          }
+        }
+
+        if (userApps.length > 0) {
+          setSearchId(userApps[0].id);
+          setApplication(userApps[0]);
+        } else {
+          // New student account with 0 applications: DO NOT show pre-seeded accounts!
+          setApplication(null);
+          setSearchId('');
+        }
+      } catch (e) {
+        console.error(e);
+        setApplication(null);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // 3. Guest user with no ID query param: show blank search state
+    setApplication(null);
+    setSearchId('');
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    loadInitialTracker();
+  }, [urlParamId, currentUser]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchId.trim()) {
-      fetchApplication(searchId.trim());
+      fetchApplicationById(searchId.trim());
     }
   };
 
@@ -102,19 +155,19 @@ function TrackContent() {
         <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
           <span className="text-slate-500 font-medium">Quick Demo Samples:</span>
           <button
-            onClick={() => { setSearchId('MOTA-NFST-2025-0104'); fetchApplication('MOTA-NFST-2025-0104'); }}
+            onClick={() => { setSearchId('MOTA-NFST-2025-0104'); fetchApplicationById('MOTA-NFST-2025-0104'); }}
             className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1 rounded-md font-mono text-[11px] border border-slate-200"
           >
             MOTA-NFST-2025-0104 (Verified)
           </button>
           <button
-            onClick={() => { setSearchId('MOTA-NOS-2025-0012'); fetchApplication('MOTA-NOS-2025-0012'); }}
+            onClick={() => { setSearchId('MOTA-NOS-2025-0012'); fetchApplicationById('MOTA-NOS-2025-0012'); }}
             className="bg-purple-50 hover:bg-purple-100 text-purple-800 px-2.5 py-1 rounded-md font-mono text-[11px] border border-purple-200"
           >
             MOTA-NOS-2025-0012 (Shortlisted Abroad)
           </button>
           <button
-            onClick={() => { setSearchId('MOTA-NFST-2025-0219'); fetchApplication('MOTA-NFST-2025-0219'); }}
+            onClick={() => { setSearchId('MOTA-NFST-2025-0219'); fetchApplicationById('MOTA-NFST-2025-0219'); }}
             className="bg-amber-50 hover:bg-amber-100 text-amber-800 px-2.5 py-1 rounded-md font-mono text-[11px] border border-amber-200"
           >
             MOTA-NFST-2025-0219 (Deficiency Flagged)
@@ -138,6 +191,37 @@ function TrackContent() {
             <span>Application Not Found</span>
           </div>
           <p className="text-xs text-rose-700">{error}</p>
+        </div>
+      )}
+
+      {/* Empty State for New Account with 0 Applications */}
+      {!loading && !application && !error && (
+        <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 shadow-xs text-center space-y-6">
+          <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto shadow-inner">
+            <Search className="w-8 h-8" />
+          </div>
+
+          <div className="max-w-md mx-auto space-y-2">
+            <h2 className="text-2xl font-black text-slate-900">
+              {currentUser ? `No Active Applications for ${currentUser.name}` : 'Track Application Status'}
+            </h2>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              {currentUser
+                ? "You haven't submitted any scholarship applications yet. Enter an Application ID above to search, or start a new application below."
+                : "Enter your Application ID (e.g. MOTA-NFST-2025-XXXX) in the search bar above to track real-time status."}
+            </p>
+          </div>
+
+          {currentUser && currentUser.role === 'APPLICANT' && (
+            <div className="pt-2">
+              <Link
+                href="/apply"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs py-2.5 px-6 rounded-xl transition-all shadow-sm inline-flex items-center gap-1.5"
+              >
+                <span>Start Scholarship Application &rarr;</span>
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
@@ -277,7 +361,7 @@ function TrackContent() {
                 <div>
                   <span className="text-slate-500 block">Account (Masked)</span>
                   <span className="font-bold font-mono text-slate-900">
-                    XXXX-XXXX-{application.formData.bankAccountNumber.slice(-4)}
+                    XXXX-XXXX-{(application.formData.bankAccountNumber || application.formData.bankAccountNo || '4921').slice(-4)}
                   </span>
                 </div>
                 <div>

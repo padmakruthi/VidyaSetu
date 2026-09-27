@@ -8,15 +8,14 @@ import { Footer } from '@/components/Footer';
 export const metadata: Metadata = {
   title: 'VidyaSetu (विद्यासेतु) - MoTA Scholarship & Fellowship Management System',
   description:
-    'AI-Enabled Lifecycle Scholarship & Fellowship Management Engine for Scheduled Tribes by Ministry of Tribal Affairs (MoTA), Government of India. Team parllaxx_24951A05M7 (SIH 2026).',
+    'AI-Enabled Lifecycle Scholarship & Fellowship Management Engine for Scheduled Tribes by Ministry of Tribal Affairs (MoTA), Government of India.',
   keywords: [
     'VidyaSetu',
     'Ministry of Tribal Affairs',
     'NFST',
     'NOS',
     'Scheduled Tribes',
-    'Smart India Hackathon',
-    'parllaxx_24951A05M7'
+    'Digital Public Infrastructure'
   ]
 };
 

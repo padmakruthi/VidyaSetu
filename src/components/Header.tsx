@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLanguage } from './LanguageContext';
+import { useRouter } from 'next/navigation';
+import { UserAvatar } from './UserAvatar';
 import {
   Bell,
   Menu,
@@ -15,17 +17,29 @@ import {
   Search,
   Sparkles,
   Award,
-  Layers
+  Layers,
+  LogOut,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
 import { NotificationDrawer } from './NotificationDrawer';
 
 export function Header() {
-  const { t, lang, currentUser, notificationsOpen, setNotificationsOpen } = useLanguage();
+  const router = useRouter();
+  const { t, lang, currentUser, switchUser, notificationsOpen, setNotificationsOpen } = useLanguage();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const isApplicant = currentUser.role === 'APPLICANT';
-  const isOfficer = ['SCRUTINY_OFFICER', 'SELECTION_COMMITTEE', 'ADMIN'].includes(currentUser.role);
+  const isApplicant = currentUser?.role === 'APPLICANT';
+  const isOfficer = currentUser && ['SCRUTINY_OFFICER', 'SELECTION_COMMITTEE', 'ADMIN'].includes(currentUser.role);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (e) {}
+    // Reset session
+    router.push('/login');
+  };
 
   return (
     <>
@@ -107,53 +121,61 @@ export function Header() {
                 </>
               )}
 
-              {/* Admin & Official Quick Links */}
+              {/* Officer Navigation Links */}
               {isOfficer && (
                 <>
-                  <Link
-                    href="/admin"
-                    className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
-                      pathname === '/admin' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <FileCheck2 className="w-4 h-4 text-blue-600" />
-                    Scrutiny Queue
-                  </Link>
+                  {(currentUser.role === 'SCRUTINY_OFFICER' || currentUser.role === 'ADMIN') && (
+                    <Link
+                      href="/admin"
+                      className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
+                        pathname === '/admin' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
+                      }`}
+                    >
+                      <FileCheck2 className="w-4 h-4 text-blue-600" />
+                      Scrutiny Queue
+                    </Link>
+                  )}
 
-                  <Link
-                    href="/admin/selection"
-                    className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
-                      pathname === '/admin/selection' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Users className="w-4 h-4 text-purple-600" />
-                    Selection Committee
-                  </Link>
+                  {(currentUser.role === 'SELECTION_COMMITTEE' || currentUser.role === 'ADMIN') && (
+                    <Link
+                      href="/admin/selection"
+                      className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
+                        pathname === '/admin/selection' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Users className="w-4 h-4 text-purple-600" />
+                      Selection Committee
+                    </Link>
+                  )}
 
-                  <Link
-                    href="/admin/rules"
-                    className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
-                      pathname === '/admin/rules' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Sliders className="w-4 h-4 text-amber-600" />
-                    Scheme Rules
-                  </Link>
+                  {(currentUser.role === 'SELECTION_COMMITTEE' || currentUser.role === 'ADMIN') && (
+                    <Link
+                      href="/admin/rules"
+                      className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
+                        pathname === '/admin/rules' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
+                      }`}
+                    >
+                      <Sliders className="w-4 h-4 text-amber-600" />
+                      Scheme Rules
+                    </Link>
+                  )}
 
-                  <Link
-                    href="/admin/analytics"
-                    className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
-                      pathname === '/admin/analytics' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <BarChart3 className="w-4 h-4 text-emerald-600" />
-                    Analytics
-                  </Link>
+                  {currentUser.role === 'ADMIN' && (
+                    <Link
+                      href="/admin/analytics"
+                      className={`px-3 py-2 rounded-md transition-colors flex items-center gap-1.5 ${
+                        pathname === '/admin/analytics' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
+                      }`}
+                    >
+                      <BarChart3 className="w-4 h-4 text-emerald-600" />
+                      Analytics
+                    </Link>
+                  )}
                 </>
               )}
             </nav>
 
-            {/* Right: Notifications + User Profile Badge */}
+            {/* Right: Notifications + Sign In / Sign Up or Profile & Logout */}
             <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Notification Button */}
               <button
@@ -165,35 +187,55 @@ export function Header() {
                 <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full ring-2 ring-white" />
               </button>
 
-              {/* User Identity Chip */}
+              {/* User Profile Badge & Logout or Sign In/Sign Up */}
               <div className="flex items-center space-x-2 pl-2 border-l border-slate-200">
-                <div className="relative w-8 h-8 rounded-full bg-slate-200 overflow-hidden ring-1 ring-slate-300">
-                  {currentUser.avatar ? (
-                    <img
-                      src={currentUser.avatar}
-                      alt={currentUser.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center font-bold text-slate-700 text-xs">
-                      {currentUser.name.charAt(0)}
+                {currentUser ? (
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center space-x-2">
+                      <UserAvatar name={currentUser.name} role={currentUser.role} sizeClassName="w-8 h-8 text-xs" />
+                      <div className="hidden sm:block text-left">
+                        <div className="text-xs font-bold text-slate-900 line-clamp-1 leading-tight">
+                          {lang === 'hi' && currentUser.nameHi ? currentUser.nameHi : currentUser.name}
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-medium">
+                          {currentUser.role === 'APPLICANT'
+                            ? `ST Scholar (${currentUser.community || 'Tribal'})`
+                            : currentUser.role === 'SCRUTINY_OFFICER'
+                            ? 'Scrutiny Officer'
+                            : currentUser.role === 'SELECTION_COMMITTEE'
+                            ? 'Committee Member'
+                            : 'MoTA Director'}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-                <div className="hidden sm:block text-left">
-                  <div className="text-xs font-bold text-slate-900 line-clamp-1 leading-tight">
-                    {lang === 'hi' && currentUser.nameHi ? currentUser.nameHi : currentUser.name}
+
+                    <button
+                      onClick={handleLogout}
+                      className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold"
+                      title="Sign Out"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      <span className="hidden md:inline">Logout</span>
+                    </button>
                   </div>
-                  <div className="text-[10px] text-slate-500 font-medium">
-                    {currentUser.role === 'APPLICANT'
-                      ? `ST Scholar (${currentUser.community || 'Tribal'})`
-                      : currentUser.role === 'SCRUTINY_OFFICER'
-                      ? 'Scrutiny Officer'
-                      : currentUser.role === 'SELECTION_COMMITTEE'
-                      ? 'Committee Member'
-                      : 'MoTA Director'}
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Link
+                      href="/login"
+                      className="px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-blue-900 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-1"
+                    >
+                      <LogIn className="w-3.5 h-3.5" />
+                      <span>Sign In</span>
+                    </Link>
+                    <Link
+                      href="/signup"
+                      className="px-3 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors flex items-center gap-1 shadow-xs"
+                    >
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Sign Up</span>
+                    </Link>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Mobile menu hamburger */}

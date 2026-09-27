@@ -1,3 +1,4 @@
+import bcrypt from 'bcryptjs';
 import {
   User,
   Scheme,
@@ -6,8 +7,13 @@ import {
   DeficiencyNotice,
   VerificationLog,
   NotificationItem,
-  LifecycleStage
+  LifecycleStage,
+  STWelfareOffice,
+  VisitSlotBooking
 } from './types';
+
+// Pre-seeded Hashed Password for Demo Accounts ("Password@123")
+const SEEDED_PASSWORD_HASH = bcrypt.hashSync('Password@123', 10);
 
 // Mock Users
 export const initialUsers: User[] = [
@@ -21,7 +27,7 @@ export const initialUsers: User[] = [
     state: 'Odisha',
     district: 'Mayurbhanj',
     community: 'Santhal',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80'
+    passwordHash: SEEDED_PASSWORD_HASH
   },
   {
     id: 'user-sunita',
@@ -33,7 +39,7 @@ export const initialUsers: User[] = [
     state: 'Jharkhand',
     district: 'Ranchi',
     community: 'Munda',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80'
+    passwordHash: SEEDED_PASSWORD_HASH
   },
   {
     id: 'user-vipin',
@@ -45,7 +51,19 @@ export const initialUsers: User[] = [
     state: 'Madhya Pradesh',
     district: 'Mandla',
     community: 'Gond',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80'
+    passwordHash: SEEDED_PASSWORD_HASH
+  },
+  {
+    id: 'user-riza',
+    name: 'Riza Hawk',
+    nameHi: 'रिज़ा हॉक',
+    email: 'rizahawk09@gmail.com',
+    mobile: '9876543210',
+    role: 'APPLICANT',
+    state: 'Odisha',
+    district: 'Mayurbhanj',
+    community: 'Santhal',
+    passwordHash: SEEDED_PASSWORD_HASH
   },
   {
     id: 'user-scrutiny',
@@ -55,7 +73,7 @@ export const initialUsers: User[] = [
     mobile: '9440112233',
     role: 'SCRUTINY_OFFICER',
     state: 'New Delhi',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&auto=format&fit=crop&q=80'
+    passwordHash: SEEDED_PASSWORD_HASH
   },
   {
     id: 'user-committee',
@@ -66,7 +84,7 @@ export const initialUsers: User[] = [
     role: 'SELECTION_COMMITTEE',
     state: 'New Delhi',
     community: 'Oraon',
-    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=120&auto=format&fit=crop&q=80'
+    passwordHash: SEEDED_PASSWORD_HASH
   },
   {
     id: 'user-admin',
@@ -76,9 +94,19 @@ export const initialUsers: User[] = [
     mobile: '9811009988',
     role: 'ADMIN',
     state: 'New Delhi',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&auto=format&fit=crop&q=80'
+    passwordHash: SEEDED_PASSWORD_HASH
   }
 ];
+
+export function addUser(user: User) {
+  const existingIndex = initialUsers.findIndex(u => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase());
+  if (existingIndex >= 0) {
+    initialUsers[existingIndex] = user;
+  } else {
+    initialUsers.push(user);
+  }
+  return user;
+}
 
 // Mock Schemes with PPT details
 export const initialSchemes: Scheme[] = [
@@ -100,7 +128,7 @@ export const initialSchemes: Scheme[] = [
       maxAge: 36,
       maxAnnualFamilyIncome: undefined, // No income cap for NFST
       qualifyingExamRequired: true,
-      requiredExamName: 'UGC-NET / CSIR-NET / GATE / ICAR',
+      requiredExamName: 'UGC-NET / CSIR-NET',
       stQuotaPercentage: 100,
       femaleSubQuotaPercentage: 33,
       stipendAmountMonthly: 31000,
@@ -176,7 +204,7 @@ export const initialSchemes: Scheme[] = [
     rules: {
       minPgMarksPercentage: 60,
       maxAge: 35,
-      maxAnnualFamilyIncome: 800000, // ₹8,00,000 ceiling
+      maxAnnualFamilyIncome: 600000, // ₹6,00,000 ceiling
       qualifyingExamRequired: true,
       requiredExamName: 'IELTS / TOEFL / GRE with Unconditional Foreign Offer Letter',
       stQuotaPercentage: 100,
@@ -197,9 +225,9 @@ export const initialSchemes: Scheme[] = [
       },
       {
         id: 'doc-income-nos',
-        name: 'Income Certificate (≤ ₹8.00 Lakhs)',
-        nameHi: 'आय प्रमाण पत्र (₹८.०० लाख से कम)',
-        description: 'Mandatory certificate demonstrating total family income not exceeding ₹8,00,000 p.a.',
+        name: 'Income Certificate (≤ ₹6.00 Lakhs)',
+        nameHi: 'आय प्रमाण पत्र (₹६.०० लाख से कम)',
+        description: 'Mandatory certificate demonstrating total family income not exceeding ₹6,00,000 p.a.',
         required: true,
         allowedFormats: ['PDF'],
         maxSizeMb: 5,
@@ -481,7 +509,7 @@ export const initialApplications: Application[] = [
         officerName: 'Dr. Rajeshwar Rao',
         officerRole: 'SCRUTINY_OFFICER',
         action: 'APPLICATION_VERIFIED',
-        details: 'Exceptional candidate. Unconditional offer from QS #2 Imperial College London. Income ₹4.2L is well within ₹8L cap.',
+        details: 'Exceptional candidate. Unconditional offer from QS #2 Imperial College London. Income ₹4.2L is well within ₹6L cap.',
         timestamp: '2025-08-15T14:30:00Z'
       },
       {
@@ -736,6 +764,427 @@ export const initialApplications: Application[] = [
     pfmsPaymentStatus: 'DISBURSED',
     submittedAt: '2025-08-08T09:00:00Z',
     updatedAt: '2025-08-23T10:00:00Z'
+  },
+  {
+    id: 'MOTA-NFST-2025-0909',
+    schemeId: 'nfst',
+    schemeCode: 'NFST',
+    schemeTitle: 'National Fellowship for Scheduled Tribe Students (NFST)',
+    applicantId: 'user-riza',
+    applicantName: 'Riza Hawk',
+    applicantTribe: 'Santhal',
+    applicantState: 'Odisha',
+    gender: 'FEMALE',
+    status: 'SCRUTINY_VERIFIED',
+    currentLifecycleStage: 'DATA_CROSS_CHECKED',
+    formData: {
+      fullName: 'Riza Hawk',
+      fatherOrHusbandName: 'Kanhu Soren',
+      dateOfBirth: '1998-05-12',
+      gender: 'FEMALE',
+      aadhaarLastFour: '9920',
+      mobileNumber: '9876543210',
+      emailAddress: 'rizahawk09@gmail.com',
+      permanentAddress: 'Baripada, Mayurbhanj',
+      state: 'Odisha',
+      district: 'Mayurbhanj',
+      pinCode: '757001',
+      tribeCommunity: 'Santhal',
+      casteCertificateNo: 'ST/OD/MAY/2022/9021',
+      casteIssuingAuthority: 'Tehsildar, Baripada',
+      casteIssueDate: '2022-04-15',
+      annualFamilyIncome: 150000,
+      incomeCertificateNo: 'INC/OD/2024/9912',
+      ugDegree: 'B.Sc. (Botany Hons)',
+      ugInstitute: 'MPC Autonomous College, Baripada',
+      ugMarksPercentage: 82.0,
+      pgDegree: 'M.Sc. (Ethnobotany)',
+      pgInstitute: 'Utkal University, Bhubaneswar',
+      pgMarksPercentage: 86.5,
+      phdEnrolledUniversity: 'Jawaharlal Nehru University (JNU), New Delhi',
+      phdDepartment: 'School of Environmental Sciences',
+      phdGuideName: 'Prof. S. C. Mohapatra',
+      phdRegistrationDate: '2024-07-20',
+      researchTopicTitle: 'Ethnobotanical Documentation of Medicinal Flora in Similipal Biosphere Reserve',
+      isPremierInstitute: true,
+      bankName: 'State Bank of India',
+      bankAccountNumber: '39482019283',
+      bankIfscCode: 'SBIN0000034',
+      aadhaarLinkedBank: true
+    },
+    documents: [
+      {
+        id: 'doc-r1',
+        type: 'ST_CASTE_CERTIFICATE',
+        name: 'ST Caste Certificate',
+        fileName: 'Riza_Hawk_ST_Certificate.pdf',
+        fileSizeKb: 280,
+        uploadedAt: '2025-08-11T10:00:00Z',
+        ocrStatus: 'VERIFIED',
+        ocrScore: 99,
+        laplacianVarianceScore: 168.4,
+        isBlurry: false,
+        digiLockerVerified: true,
+        extractedFields: [
+          { fieldName: 'name', label: 'Candidate Name', value: 'Riza Hawk', confidence: 99, matchesForm: true, formValue: 'Riza Hawk', jaroWinklerScore: 1.0 },
+          { fieldName: 'caste', label: 'Tribe Category', value: 'Santhal (Scheduled Tribe)', confidence: 99, matchesForm: true, formValue: 'Santhal', jaroWinklerScore: 1.0 }
+        ],
+        aiNotes: ['DigiLocker SSO hash match verified.'],
+        samplePreviewType: 'caste'
+      }
+    ],
+    deficiencyNotices: [],
+    verificationLogs: [
+      {
+        id: 'log-r1',
+        applicationId: 'MOTA-NFST-2025-0909',
+        officerName: 'Dr. Rajeshwar Rao',
+        officerRole: 'SCRUTINY_OFFICER',
+        action: 'APPLICATION_VERIFIED',
+        details: 'Verified against e-District database. High Jaro-Winkler score 99.5%.',
+        timestamp: '2025-08-15T14:30:00Z'
+      }
+    ],
+    aiRiskScore: 5,
+    aiCompletenessScore: 100,
+    aiRecommendation: 'FAST_TRACK_APPROVE',
+    avgJaroWinklerScore: 99.5,
+    bhashiniDialectResolution: 'Santhali Ol Chiki script mapped to standard Latin transliteration',
+    edgeIqaStatus: 'PASSED',
+    aiHighlights: ['Edge Blur Gate Passed (Var 168.4)', 'DigiLocker Verified'],
+    meritScore: 95.2,
+    autoRank: 3,
+    finalRank: 3,
+    committeeStatus: 'APPROVED',
+    pfmsPaymentStatus: 'PFMS_VALIDATED',
+    submittedAt: '2025-08-11T10:00:00Z',
+    updatedAt: '2025-08-15T14:30:00Z'
+  },
+
+  // NOS Tier 1 PVTG Scholar
+  {
+    id: 'MOTA-NOS-2025-0089',
+    schemeId: 'nos',
+    schemeCode: 'NOS',
+    schemeTitle: 'National Overseas Scholarship for ST Candidates (NOS)',
+    applicantId: 'user-ramesh',
+    applicantName: 'Ramesh Birhor',
+    applicantTribe: 'Birhor',
+    applicantState: 'Jharkhand',
+    gender: 'MALE',
+    isPvtg: true,
+    status: 'SCRUTINY_VERIFIED',
+    currentLifecycleStage: 'DATA_CROSS_CHECKED',
+    formData: {
+      fullName: 'Ramesh Birhor',
+      fatherOrHusbandName: 'Late Somra Birhor',
+      dateOfBirth: '1998-09-15',
+      gender: 'MALE',
+      aadhaarLastFour: '9012',
+      mobileNumber: '9431092831',
+      emailAddress: 'ramesh.birhor@scholar.in',
+      permanentAddress: 'Village Chalkari, Topchanchi, Dist. Dhanbad',
+      state: 'Jharkhand',
+      district: 'Dhanbad',
+      pinCode: '828113',
+      tribeCommunity: 'Birhor',
+      isPvtg: true,
+      casteCertificateNo: 'PVTG/JH/DHN/2023/0019',
+      casteIssuingAuthority: 'Deputy Commissioner, Dhanbad',
+      casteIssueDate: '2023-01-10',
+      annualFamilyIncome: 320000,
+      incomeCertificateNo: 'INC/JH/2024/9910',
+      ugDegree: 'B.Sc. Forestry & Ecology',
+      ugInstitute: 'Birsa Agricultural University, Ranchi',
+      ugMarksPercentage: 78.4,
+      pgDegree: 'M.Sc. Environmental Science',
+      pgInstitute: 'Forest Research Institute (FRI), Dehradun',
+      pgMarksPercentage: 81.5,
+      qualifyingExam: 'GRE 318 + IELTS Band 7.5',
+      qualifyingExamRollNo: 'GRE-991028',
+      qualifyingExamYear: '2024',
+      qualifyingExamPercentile: 92.0,
+      foreignUniversityName: 'University of British Columbia (UBC), Canada',
+      foreignCountry: 'Canada',
+      qsWorldRanking: 34,
+      foreignCourseName: 'Ph.D in Indigenous Forestry Systems & Climate Resilience',
+      ieltsOrGreScore: 'IELTS Band 7.5 / GRE 318',
+      hasConfirmedOffer: true,
+      passportNumber: 'V9102918',
+      passportExpiryDate: '2033-05-14',
+      tuitionFeeRequestedInr: 2800000,
+      bankName: 'State Bank of India',
+      bankAccountNumber: '39102839182',
+      bankIfscCode: 'SBIN0000841',
+      aadhaarLinkedBank: true
+    },
+    documents: [],
+    deficiencyNotices: [],
+    verificationLogs: [
+      {
+        id: 'log-nos-89',
+        applicationId: 'MOTA-NOS-2025-0089',
+        officerName: 'Dr. Rajeshwar Rao',
+        officerRole: 'SCRUTINY_OFFICER',
+        action: 'APPLICATION_VERIFIED',
+        details: 'Verified PVTG scholar (Birhor tribe). Confirmed unconditional offer from University of British Columbia (QS #34). Passed to Selection Committee.',
+        timestamp: '2025-08-20T10:15:00Z'
+      }
+    ],
+    aiRiskScore: 5,
+    aiCompletenessScore: 100,
+    aiRecommendation: 'FAST_TRACK_APPROVE',
+    avgJaroWinklerScore: 99.1,
+    bhashiniDialectResolution: 'Birhor tribal dialect transliteration verified',
+    edgeIqaStatus: 'PASSED',
+    aiHighlights: ['Particularly Vulnerable Tribal Group (PVTG) scholar.', 'Unconditional admission from UBC (QS #34).'],
+    meritScore: 92.4,
+    committeeStatus: 'PENDING',
+    submittedAt: '2025-08-18T14:20:00Z',
+    updatedAt: '2025-08-20T10:15:00Z'
+  },
+
+  // NOS Tier 2 Exam Only Scholar (No final offer yet)
+  {
+    id: 'MOTA-NOS-2025-0144',
+    schemeId: 'nos',
+    schemeCode: 'NOS',
+    schemeTitle: 'National Overseas Scholarship for ST Candidates (NOS)',
+    applicantId: 'user-pooja',
+    applicantName: 'Pooja Khasi',
+    applicantTribe: 'Khasi',
+    applicantState: 'Meghalaya',
+    gender: 'FEMALE',
+    status: 'SCRUTINY_VERIFIED',
+    currentLifecycleStage: 'DATA_CROSS_CHECKED',
+    formData: {
+      fullName: 'Pooja Khasi',
+      fatherOrHusbandName: 'Bah John Khasi',
+      dateOfBirth: '2000-03-22',
+      gender: 'FEMALE',
+      aadhaarLastFour: '5512',
+      mobileNumber: '9436018291',
+      emailAddress: 'pooja.khasi@scholar.in',
+      permanentAddress: 'Laitumkhrah, Shillong',
+      state: 'Meghalaya',
+      district: 'East Khasi Hills',
+      pinCode: '793003',
+      tribeCommunity: 'Khasi',
+      casteCertificateNo: 'ST/ML/SHL/2022/8812',
+      casteIssuingAuthority: 'Deputy Commissioner, Shillong',
+      casteIssueDate: '2022-07-19',
+      annualFamilyIncome: 480000,
+      incomeCertificateNo: 'INC/ML/2024/3391',
+      ugDegree: 'B.Sc. Biotechnology',
+      ugInstitute: 'St. Anthony\'s College, Shillong',
+      ugMarksPercentage: 81.0,
+      pgDegree: 'M.Sc. Molecular Biology',
+      pgInstitute: 'North-Eastern Hill University (NEHU), Shillong',
+      pgMarksPercentage: 84.0,
+      qualifyingExam: 'GRE 322 + TOEFL 108 (Cleared)',
+      qualifyingExamRollNo: 'GRE-881920',
+      qualifyingExamYear: '2024',
+      qualifyingExamPercentile: 94.5,
+      foreignUniversityName: '',
+      foreignCountry: 'United States',
+      qsWorldRanking: undefined,
+      foreignCourseName: 'Ph.D. in Molecular Genetics & Herbal Drug Discovery',
+      ieltsOrGreScore: 'TOEFL 108 / GRE 322',
+      hasConfirmedOffer: false, // Tier 2 Exam Cleared Only
+      passportNumber: 'W8819201',
+      passportExpiryDate: '2031-09-10',
+      tuitionFeeRequestedInr: 3000000,
+      bankName: 'HDFC Bank',
+      bankAccountNumber: '50100291829',
+      bankIfscCode: 'HDFC0000192',
+      aadhaarLinkedBank: true
+    },
+    documents: [],
+    deficiencyNotices: [],
+    verificationLogs: [
+      {
+        id: 'log-nos-144',
+        applicationId: 'MOTA-NOS-2025-0144',
+        officerName: 'Dr. Rajeshwar Rao',
+        officerRole: 'SCRUTINY_OFFICER',
+        action: 'APPLICATION_VERIFIED',
+        details: 'GRE 322 + TOEFL 108 scorecards verified. Candidate categorized under NOS Priority Tier 2 (Exam Cleared, Awaiting University Offer).',
+        timestamp: '2025-08-21T11:30:00Z'
+      }
+    ],
+    aiRiskScore: 8,
+    aiCompletenessScore: 90,
+    aiRecommendation: 'FAST_TRACK_APPROVE',
+    avgJaroWinklerScore: 98.8,
+    bhashiniDialectResolution: 'Khasi Latin standard aligned',
+    edgeIqaStatus: 'PASSED',
+    aiHighlights: ['Priority Tier 2: GRE 322 & TOEFL 108 cleared.', 'Eligible under 30% Female ST Sub-Quota.'],
+    meritScore: 89.5,
+    committeeStatus: 'PENDING',
+    submittedAt: '2025-08-19T16:00:00Z',
+    updatedAt: '2025-08-21T11:30:00Z'
+  },
+
+  // NFST Premier Institute + PVTG Scholar
+  {
+    id: 'MOTA-NFST-2025-0312',
+    schemeId: 'nfst',
+    schemeCode: 'NFST',
+    schemeTitle: 'National Fellowship for Scheduled Tribe Students (NFST)',
+    applicantId: 'user-birsa',
+    applicantName: 'Dr. Birsa Chenchu',
+    applicantTribe: 'Chenchu',
+    applicantState: 'Andhra Pradesh',
+    gender: 'MALE',
+    isPvtg: true,
+    status: 'SCRUTINY_VERIFIED',
+    currentLifecycleStage: 'DATA_CROSS_CHECKED',
+    formData: {
+      fullName: 'Dr. Birsa Chenchu',
+      fatherOrHusbandName: 'Late Venkata Chenchu',
+      dateOfBirth: '1997-06-18',
+      gender: 'MALE',
+      aadhaarLastFour: '1128',
+      mobileNumber: '9440918291',
+      emailAddress: 'birsa.chenchu@scholar.in',
+      permanentAddress: 'Srisailam Tribal Colony, Dist. Kurnool',
+      state: 'Andhra Pradesh',
+      district: 'Kurnool',
+      pinCode: '518102',
+      tribeCommunity: 'Chenchu',
+      isPvtg: true,
+      casteCertificateNo: 'PVTG/AP/KUR/2022/4410',
+      casteIssuingAuthority: 'Tahsildar, Srisailam',
+      casteIssueDate: '2022-04-12',
+      annualFamilyIncome: 120000,
+      incomeCertificateNo: 'INC/AP/2024/5512',
+      ugDegree: 'B.Tech Earth Sciences',
+      ugInstitute: 'Andhra University, Visakhapatnam',
+      ugMarksPercentage: 80.2,
+      pgDegree: 'M.Tech Petroleum & Geo-Resources Engg',
+      pgInstitute: 'IIT (ISM) Dhanbad',
+      pgMarksPercentage: 83.5,
+      qualifyingExam: 'UGC-NET (Earth & Planetary Sciences)',
+      qualifyingExamRollNo: 'AP08001928',
+      qualifyingExamYear: '2024',
+      qualifyingExamPercentile: 95.6,
+      phdEnrolledUniversity: 'IIT (ISM) Dhanbad',
+      phdDepartment: 'Department of Applied Geophysics',
+      phdGuideName: 'Prof. S. K. Pal',
+      phdRegistrationDate: '2024-08-01',
+      researchTopicTitle: 'Deep Seismic Imaging and Subsurface Aquifer Mapping in Nallamala Tribal Belt',
+      isPremierInstitute: true,
+      bankName: 'Canara Bank',
+      bankAccountNumber: '49102918291',
+      bankIfscCode: 'CNRB0001928',
+      aadhaarLinkedBank: true
+    },
+    documents: [],
+    deficiencyNotices: [],
+    verificationLogs: [
+      {
+        id: 'log-nfst-312',
+        applicationId: 'MOTA-NFST-2025-0312',
+        officerName: 'Dr. Rajeshwar Rao',
+        officerRole: 'SCRUTINY_OFFICER',
+        action: 'APPLICATION_VERIFIED',
+        details: 'Premier Institute Scholar (IIT Dhanbad) from Chenchu PVTG tribe. UGC-NET 95.6%. Forwarded for automatic priority allocation.',
+        timestamp: '2025-08-20T14:10:00Z'
+      }
+    ],
+    aiRiskScore: 3,
+    aiCompletenessScore: 100,
+    aiRecommendation: 'FAST_TRACK_APPROVE',
+    avgJaroWinklerScore: 99.5,
+    bhashiniDialectResolution: 'Chenchu Telugu transliteration verified',
+    edgeIqaStatus: 'PASSED',
+    aiHighlights: ['Premier Institute Priority Slot (IIT Dhanbad).', 'PVTG (Chenchu) category candidate.'],
+    meritScore: 96.0,
+    committeeStatus: 'PENDING',
+    submittedAt: '2025-08-16T10:00:00Z',
+    updatedAt: '2025-08-20T14:10:00Z'
+  },
+
+  // NFST Divyangjan (PwD 45%) + PVTG Scholar
+  {
+    id: 'MOTA-NFST-2025-0567',
+    schemeId: 'nfst',
+    schemeCode: 'NFST',
+    schemeTitle: 'National Fellowship for Scheduled Tribe Students (NFST)',
+    applicantId: 'user-mamta',
+    applicantName: 'Mamta Juang',
+    applicantTribe: 'Juang',
+    applicantState: 'Odisha',
+    gender: 'FEMALE',
+    isPvtg: true,
+    isPwd: true,
+    status: 'SCRUTINY_VERIFIED',
+    currentLifecycleStage: 'DATA_CROSS_CHECKED',
+    formData: {
+      fullName: 'Mamta Juang',
+      fatherOrHusbandName: 'Kanhu Juang',
+      dateOfBirth: '1999-10-04',
+      gender: 'FEMALE',
+      aadhaarLastFour: '6630',
+      mobileNumber: '9437918201',
+      emailAddress: 'mamta.juang@scholar.in',
+      permanentAddress: 'Gonasika Tribal Hamlet, Dist. Keonjhar',
+      state: 'Odisha',
+      district: 'Keonjhar',
+      pinCode: '758001',
+      tribeCommunity: 'Juang',
+      isPvtg: true,
+      isPwd: true,
+      pwdDisabilityPercentage: 45,
+      casteCertificateNo: 'PVTG/OD/KJR/2021/0088',
+      casteIssuingAuthority: 'Collector & District Magistrate, Keonjhar',
+      casteIssueDate: '2021-11-05',
+      annualFamilyIncome: 95000,
+      incomeCertificateNo: 'INC/OD/2024/1102',
+      ugDegree: 'B.Sc. Zoology',
+      ugInstitute: 'Dharani Dhar University, Keonjhar',
+      ugMarksPercentage: 75.0,
+      pgDegree: 'M.Sc. Environmental Biology',
+      pgInstitute: 'Utkal University, Bhubaneswar',
+      pgMarksPercentage: 77.8,
+      qualifyingExam: 'CSIR-NET (Environmental Sciences)',
+      qualifyingExamRollNo: 'OR03009918',
+      qualifyingExamYear: '2024',
+      qualifyingExamPercentile: 90.2,
+      phdEnrolledUniversity: 'Utkal University',
+      phdDepartment: 'Department of Zoology',
+      phdGuideName: 'Prof. S. Nayak',
+      phdRegistrationDate: '2024-07-20',
+      researchTopicTitle: 'Biodiversity Conservation & Medicinal Plant Ecology in Juang Development Agency Protected Ecosystems',
+      bankName: 'State Bank of India',
+      bankAccountNumber: '39102910291',
+      bankIfscCode: 'SBIN0000122',
+      aadhaarLinkedBank: true
+    },
+    documents: [],
+    deficiencyNotices: [],
+    verificationLogs: [
+      {
+        id: 'log-nfst-567',
+        applicationId: 'MOTA-NFST-2025-0567',
+        officerName: 'Dr. Rajeshwar Rao',
+        officerRole: 'SCRUTINY_OFFICER',
+        action: 'APPLICATION_VERIFIED',
+        details: 'Divyangjan / PwD scholar (45% locomotor disability) from Juang PVTG tribe. CSIR-NET 90.2%. High priority Category 1 allocation.',
+        timestamp: '2025-08-21T15:40:00Z'
+      }
+    ],
+    aiRiskScore: 4,
+    aiCompletenessScore: 100,
+    aiRecommendation: 'FAST_TRACK_APPROVE',
+    avgJaroWinklerScore: 99.0,
+    bhashiniDialectResolution: 'Juang Oriya phonetics mapped',
+    edgeIqaStatus: 'PASSED',
+    aiHighlights: ['Category 1: Divyangjan / PwD (45% disability) candidate.', 'PVTG (Juang) & Female sub-quota eligible.'],
+    meritScore: 88.0,
+    committeeStatus: 'PENDING',
+    submittedAt: '2025-08-19T09:30:00Z',
+    updatedAt: '2025-08-21T15:40:00Z'
   }
 ];
 
@@ -884,4 +1333,161 @@ export function getNotificationsForUser(userId: string): NotificationItem[] {
 
 export function addNotificationToStore(notif: NotificationItem) {
   notificationsData = [notif, ...notificationsData];
+}
+
+// ST Welfare Offices Seed Data
+export const initialSTWelfareOffices: STWelfareOffice[] = [
+  {
+    id: 'office-delhi',
+    name: 'Central Tribal Welfare Nodal Office, New Delhi',
+    nameHi: 'केन्द्रीय जनजातीय कल्याण नोडल कार्यालय, नई दिल्ली',
+    state: 'New Delhi',
+    district: 'New Delhi',
+    address: 'Shastri Bhawan, Dr. Rajendra Prasad Road, New Delhi - 110001',
+    contactOfficer: 'Shri Vikram Singh, Deputy Director',
+    phone: '011-23381234'
+  },
+  {
+    id: 'office-ranchi',
+    name: 'Jharkhand State Tribal Welfare Directorate, Ranchi',
+    nameHi: 'झारखंड राज्य जनजातीय कल्याण निदेशालय, रांची',
+    state: 'Jharkhand',
+    district: 'Ranchi',
+    address: 'Kanke Road, Near CM Residence, Ranchi, Jharkhand - 834008',
+    contactOfficer: 'Dr. Sunil Purty, Nodal Officer',
+    phone: '0651-2409876'
+  },
+  {
+    id: 'office-mayurbhanj',
+    name: 'Odisha Tribal Development Nodal Agency, Mayurbhanj',
+    nameHi: 'ओडिशा जनजातीय विकास नोडल एजेंसी, मयूरभंज',
+    state: 'Odisha',
+    district: 'Mayurbhanj',
+    address: 'Collectorate Complex, Baripada, Mayurbhanj, Odisha - 757001',
+    contactOfficer: 'Smt. Mamata Marandi, District Welfare Officer',
+    phone: '06792-254321'
+  },
+  {
+    id: 'office-mandla',
+    name: 'Madhya Pradesh Tribal Affairs Nodal Office, Mandla',
+    nameHi: 'मध्य प्रदेश जनजातीय कार्य नोडल कार्यालय, मंडला',
+    state: 'Madhya Pradesh',
+    district: 'Mandla',
+    address: 'District Collectorate Campus, Mandla, MP - 481661',
+    contactOfficer: 'Shri Rakesh Uikey, Assistant Commissioner',
+    phone: '07642-260123'
+  },
+  {
+    id: 'office-raipur',
+    name: 'Chhattisgarh Tribal Welfare Directorate, Naya Raipur',
+    nameHi: 'छत्तीसगढ़ जनजातीय कल्याण निदेशालय, नया रायपुर',
+    state: 'Chhattisgarh',
+    district: 'Raipur',
+    address: 'Block 3, Indravati Bhawan, Naya Raipur, CG - 492002',
+    contactOfficer: 'Shri Anil Netam, Joint Director',
+    phone: '0771-2510987'
+  },
+  {
+    id: 'office-guwahati',
+    name: 'Assam Tribal Affairs Regional Office, Guwahati',
+    nameHi: 'असम जनजातीय कार्य क्षेत्रीय कार्यालय, गुवाहाटी',
+    state: 'Assam',
+    district: 'Kamrup Metropolitan',
+    address: 'Janata Bhawan, Dispur, Guwahati, Assam - 781006',
+    contactOfficer: 'Smt. Bandana Boro, Regional Officer',
+    phone: '0361-2265432'
+  },
+  {
+    id: 'office-udaipur',
+    name: 'Rajasthan Tribal Area Development Department, Udaipur',
+    nameHi: 'राजस्थान जनजातीय क्षेत्र विकास विभाग, उदयपुर',
+    state: 'Rajasthan',
+    district: 'Udaipur',
+    address: 'Saheli Marg, Cheetak Circle, Udaipur, Rajasthan - 313001',
+    contactOfficer: 'Shri Mohan Meena, Project Officer',
+    phone: '0294-2421098'
+  }
+];
+
+// Global Booked Visit Slots Registry for Double-Booking Prevention
+let globalVisitBookings: VisitSlotBooking[] = [
+  // Seed an existing booked slot for demo evaluation
+  {
+    referenceNo: 'MOTA-VISIT-78491',
+    appId: 'MOTA-NFST-2025-0899',
+    applicantName: 'Demo Scholar',
+    officeId: 'office-mayurbhanj',
+    officeName: 'Odisha Tribal Development Nodal Agency, Mayurbhanj',
+    officeAddress: 'Collectorate Complex, Baripada, Mayurbhanj, Odisha - 757001',
+    contactOfficer: 'Smt. Mamata Marandi, District Welfare Officer',
+    date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // Tomorrow
+    timeSlot: '10:30 AM - 11:00 AM',
+    bookedAt: new Date().toISOString()
+  }
+];
+
+export function getSTWelfareOffices(): STWelfareOffice[] {
+  return initialSTWelfareOffices;
+}
+
+export function getBookedSlots(officeId: string, date: string): string[] {
+  return globalVisitBookings
+    .filter(b => b.officeId === officeId && b.date === date)
+    .map(b => b.timeSlot);
+}
+
+export function bookOfficeVisitSlot(
+  appId: string,
+  officeId: string,
+  date: string,
+  timeSlot: string
+): VisitSlotBooking {
+  const app = getApplicationById(appId);
+  if (!app) throw new Error('Application not found');
+
+  const office = initialSTWelfareOffices.find(o => o.id === officeId);
+  if (!office) throw new Error('ST Welfare Office not found');
+
+  // Double-booking check
+  const isAlreadyBooked = globalVisitBookings.some(
+    b => b.officeId === officeId && b.date === date && b.timeSlot === timeSlot
+  );
+
+  if (isAlreadyBooked) {
+    throw new Error('This time slot has just been booked by another applicant. Please select a different slot.');
+  }
+
+  const refNo = `MOTA-VISIT-${Math.floor(10000 + Math.random() * 90000)}`;
+
+  const newBooking: VisitSlotBooking = {
+    referenceNo: refNo,
+    appId: app.id,
+    applicantName: app.applicantName,
+    officeId: office.id,
+    officeName: office.name,
+    officeAddress: office.address,
+    contactOfficer: office.contactOfficer,
+    date,
+    timeSlot,
+    bookedAt: new Date().toISOString()
+  };
+
+  globalVisitBookings.push(newBooking);
+
+  const newLog: VerificationLog = {
+    id: `log-${Date.now()}`,
+    applicationId: app.id,
+    officerName: 'ST Scholar (Visit Booking)',
+    officerRole: 'APPLICANT',
+    action: 'FIELD_VERIFIED',
+    details: `Office Visit Slot booked for ${date} at ${timeSlot} at ${office.name}. Reference: ${refNo}`,
+    timestamp: new Date().toISOString()
+  };
+
+  updateApplication(app.id, {
+    bookedVisitSlot: newBooking,
+    verificationLogs: [...app.verificationLogs, newLog]
+  });
+
+  return newBooking;
 }

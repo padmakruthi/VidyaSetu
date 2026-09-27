@@ -1,37 +1,71 @@
 import { NextRequest, NextResponse } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { initialUsers, setCurrentUser } from '@/lib/store';
-import { signToken } from '@/lib/auth';
+import { createRedisSession } from '@/lib/redisSession';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, role, userId } = body;
+    const { email, password, loginType, selectedAdminRole } = body;
 
-    let user = initialUsers.find(u => u.id === userId);
-    if (!user && email) {
-      user = initialUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!email || !password) {
+      return NextResponse.json(
+        { success: false, error: 'Email and password are required' },
+        { status: 400 }
+      );
     }
-    if (!user && role) {
-      user = initialUsers.find(u => u.role === role);
-    }
+
+    const user = initialUsers.find(
+      u => u.email.toLowerCase() === email.toLowerCase().trim()
+    );
+
     if (!user) {
-      // Default fallback
-      user = initialUsers[0];
+      return NextResponse.json(
+        { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Verify password if hash exists
+    if (user.passwordHash) {
+      const isValid = await bcrypt.compare(password, user.passwordHash);
+      if (!isValid) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid email or password' },
+          { status: 401 }
+        );
+      }
+    }
+
+    // Role-match override for admin login dropdown (as required by specification)
+    if (loginType === 'ADMIN' && selectedAdminRole) {
+      user.role = selectedAdminRole;
+    } else if (loginType === 'STUDENT') {
+      user.role = 'APPLICANT';
     }
 
     setCurrentUser(user);
-    const token = signToken(user);
+
+    // Create session in Redis Session Store
+    const sessionId = await createRedisSession(user.id, user.role, user.email);
 
     const response = NextResponse.json({
       success: true,
       user,
-      token
+      sessionId
     });
 
-    response.cookies.set('vidyasetu_token', token, {
+    // Set vidyasetu_session_id cookie
+    response.cookies.set('vidyasetu_session_id', sessionId, {
       httpOnly: false,
       path: '/',
       maxAge: 60 * 60 * 24 * 7 // 7 days
+    });
+
+    response.cookies.set('vidyasetu_current_user', JSON.stringify(user), {
+      httpOnly: false,
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7
     });
 
     return response;

@@ -35,64 +35,63 @@ function ApplyContent() {
 
   const selectedSchemeParam = searchParams.get('scheme') || 'nfst';
   const [schemeId, setSchemeId] = useState<'nfst' | 'nos'>(selectedSchemeParam === 'nos' ? 'nos' : 'nfst');
+
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submittedAppId, setSubmittedAppId] = useState<string | null>(null);
 
   // Form Data State with DPDP Masking Defaults
   const [formData, setFormData] = useState<ApplicationFormData>({
-    fullName: currentUser.name || 'Arun Soren',
+    fullName: currentUser?.name || 'Arun Soren',
     fatherOrHusbandName: 'Late Somra Soren',
     dateOfBirth: '1998-04-12',
     gender: 'MALE',
     aadhaarLastFour: '4921',
-    mobileNumber: currentUser.mobile || '9845012345',
-    emailAddress: currentUser.email || 'arun.soren@scholar.in',
+    mobileNumber: currentUser?.mobile || '9845012345',
+    emailAddress: currentUser?.email || 'arun.soren@scholar.in',
     permanentAddress: 'Village Badampahar, P.O. Rairangpur, Dist. Mayurbhanj',
-    state: currentUser.state || 'Odisha',
-    district: currentUser.district || 'Mayurbhanj',
+    state: currentUser?.state || 'Odisha',
+    district: currentUser?.district || 'Mayurbhanj',
     pinCode: '757042',
-    tribeCommunity: currentUser.community || 'Santhal',
+    tribeCommunity: currentUser?.community || 'Santhal',
     casteCertificateNo: 'ST/OD/MAY/2021/8941',
     casteIssuingAuthority: 'Tahasildar, Rairangpur, Odisha',
     casteIssueDate: '2021-08-14',
-    annualFamilyIncome: 180000,
-    incomeCertificateNo: 'INC/OD/2024/49102',
-
-    ugDegree: 'B.Sc. (Botany Hons)',
-    ugInstitute: 'North Orissa University',
-    ugMarksPercentage: 74.5,
-    pgDegree: 'M.Sc. Life Sciences (Ethnobotany)',
-    pgInstitute: 'Utkal University, Bhubaneswar',
-    pgMarksPercentage: 78.2,
-    qualifyingExam: 'UGC-NET (Life Sciences)',
-    qualifyingExamRollNo: 'OR04001928',
-    qualifyingExamYear: '2024',
-    qualifyingExamPercentile: 98.4,
-
-    // NFST Fields
-    phdEnrolledUniversity: 'Jawaharlal Nehru University (JNU), New Delhi',
-    phdDepartment: 'School of Environmental Sciences',
-    phdGuideName: 'Prof. Ramchandra Hansda',
-    phdRegistrationDate: '2024-09-01',
-    researchTopicTitle: 'Ethnomedicinal Botanical Knowledge Systems and Conservation Paradigms of Santhal Tribes in Similipal Biosphere Reserve',
-
-    // NOS Fields
-    foreignUniversityName: 'Imperial College London, United Kingdom',
-    foreignCountry: 'United Kingdom',
-    qsWorldRanking: 2,
-    foreignCourseName: 'Ph.D in Sustainable Clean Mining & Environmental Remediation in Indigenous Lands',
-    ieltsOrGreScore: 'IELTS Band 8.0 / GRE 328',
-    passportNumber: 'Z8920194',
-    passportExpiryDate: '2032-11-20',
-    tuitionFeeRequestedInr: 3200000,
-
-    // Bank & PFMS DBT Details
-    bankName: 'State Bank of India',
-    bankAccountNumber: '38291048291',
-    bankIfscCode: 'SBIN0001234',
-    aadhaarLinkedBank: true
+    annualFamilyIncome: 250000,
+    incomeCertificateNo: 'INC/OD/2024/77412',
+    incomeIssuingAuthority: 'Revenue Officer, Mayurbhanj',
+    qualifyingDegree: 'Master of Science (M.Sc Physics)',
+    universityName: 'Utkal University, Bhubaneswar',
+    pgMarksPercentage: 68.5,
+    passingYear: 2023,
+    qualifyingExamName: 'UGC-NET (Lectureship / JRF)',
+    qualifyingExamRollNo: 'OR02004812',
+    qualifyingExamScore: 198,
+    nosTargetUniversity: 'Imperial College London, UK',
+    nosQsWorldRanking: 6,
+    nosOfferStatus: 'CONFIRMED_UNCONDITIONAL',
+    nosCourseDurationYears: 3,
+    bankAccountNo: '9184510002419',
+    bankIfscCode: 'SBIN0001842',
+    bankName: 'State Bank of India (PFMS Direct DBT Rail Verified)'
   });
+
+  // Authentication & Role-Match Guard
+  useEffect(() => {
+    if (!currentUser || currentUser.role !== 'APPLICANT') {
+      const target = `/apply?scheme=${schemeId}`;
+      router.replace(`/login?redirect=${encodeURIComponent(target)}`);
+    }
+  }, [currentUser, router, schemeId]);
+
+  if (!currentUser || currentUser.role !== 'APPLICANT') {
+    return (
+      <div className="max-w-7xl mx-auto p-12 text-center text-slate-500 font-semibold text-xs">
+        <RefreshCw className="w-6 h-6 mx-auto mb-2 text-emerald-600 animate-spin" />
+        Redirecting to login portal...
+      </div>
+    );
+  }
 
   // Uploaded Documents state
   const [documents, setDocuments] = useState<DocumentItem[]>([]);
@@ -436,9 +435,9 @@ function ApplyContent() {
                   onChange={e => setFormData({ ...formData, annualFamilyIncome: parseFloat(e.target.value) })}
                   className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900 font-semibold"
                 />
-                {schemeId === 'nos' && formData.annualFamilyIncome > 800000 && (
+                {schemeId === 'nos' && formData.annualFamilyIncome > 600000 && (
                   <p className="text-[10px] text-rose-600 font-bold mt-1">
-                    ⚠️ Income exceeds ₹8.00 Lakhs ceiling for NOS scheme.
+                    ⚠️ Income exceeds ₹6.00 Lakhs ceiling for NOS scheme.
                   </p>
                 )}
               </div>
@@ -754,7 +753,7 @@ function ApplyContent() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold text-xs text-slate-900">
-                      3. {schemeId === 'nos' ? 'Foreign University Offer Letter *' : 'UGC-NET / GATE Scorecard *'}
+                      3. {schemeId === 'nos' ? 'Foreign University Offer Letter *' : 'UGC-NET / CSIR-NET Scorecard *'}
                     </span>
                     <span className="text-[10px] bg-purple-100 text-purple-800 px-2 py-0.5 rounded font-mono">
                       {schemeId === 'nos' ? 'QS Top 500' : 'NTA Record'}

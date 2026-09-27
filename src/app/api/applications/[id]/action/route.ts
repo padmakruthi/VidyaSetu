@@ -6,6 +6,7 @@ import {
   addNotificationToStore
 } from '@/lib/store';
 import { DeficiencyNotice, VerificationLog } from '@/lib/types';
+import { sendRealDeficiencyEmail } from '@/lib/mailer';
 
 export async function POST(
   request: NextRequest,
@@ -61,6 +62,19 @@ export async function POST(
           read: false,
           link: '/portal'
         });
+
+        // Send real deficiency notification email via Gmail SMTP if student email exists
+        if (application.formData?.emailAddress) {
+          sendRealDeficiencyEmail({
+            toEmail: application.formData.emailAddress,
+            studentName: application.applicantName,
+            applicationId: application.id,
+            deficiencyTitle: newDeficiency.title,
+            reason: newDeficiency.reason,
+            suggestedAction: newDeficiency.suggestedAction,
+            officerName: `${officerName} (${officerRole})`
+          }).catch(err => console.error('[SMTP] Background deficiency email error:', err));
+        }
 
         const updated = updateApplication(id, {
           status: 'DEFICIENCY_FLAGGED',
@@ -212,7 +226,73 @@ export async function POST(
 
         const updated = updateApplication(id, {
           status: 'REJECTED',
+          committeeStatus: 'REJECTED',
           verificationLogs: [...application.verificationLogs, newLog]
+        });
+
+        addNotificationToStore({
+          id: `notif-${Date.now()}`,
+          userId: application.applicantId,
+          title: 'Status Update: Fellowship Application Not Selected',
+          titleHi: 'आवेदन स्थिति: छात्रवृत्ति हेतु चयन नहीं',
+          message: `Your application ${application.id} for ${application.schemeTitle} was evaluated by the Selection Committee but not selected.`,
+          messageHi: `आपका आवेदन चयन समिति द्वारा मूल्यांकित किया गया था किंतु चयन नहीं हो सका।`,
+          type: 'WARNING',
+          channel: 'EMAIL',
+          createdAt: timestamp,
+          read: false,
+          link: '/portal'
+        });
+
+        return NextResponse.json({ success: true, application: updated });
+      }
+
+      case 'ADD_REMARK': {
+        const newLog: VerificationLog = {
+          id: `log-${Date.now()}`,
+          applicationId: application.id,
+          officerName,
+          officerRole,
+          action: 'FIELD_VERIFIED',
+          details: `Committee Remark: ${remarks || data?.remark || 'Remark recorded by panel.'}`,
+          timestamp
+        };
+
+        const updated = updateApplication(id, {
+          committeeOverrideNote: remarks || data?.remark,
+          verificationLogs: [...application.verificationLogs, newLog]
+        });
+
+        return NextResponse.json({ success: true, application: updated });
+      }
+
+      case 'FLAG_FOR_SCRUTINY': {
+        const newLog: VerificationLog = {
+          id: `log-${Date.now()}`,
+          applicationId: application.id,
+          officerName,
+          officerRole,
+          action: 'DEFICIENCY_RAISED',
+          details: `Flagged by Selection Committee for re-scrutiny: ${remarks || 'Requires detailed officer review.'}`,
+          timestamp
+        };
+
+        const updated = updateApplication(id, {
+          status: 'UNDER_SCRUTINY',
+          committeeStatus: 'PENDING',
+          verificationLogs: [...application.verificationLogs, newLog]
+        });
+
+        addNotificationToStore({
+          id: `notif-${Date.now()}`,
+          userId: 'user-scrutiny',
+          title: `Selection Committee Re-Scrutiny Flag: ${application.id}`,
+          message: `Prof. Kamala Tirkey flagged application ${application.id} for re-scrutiny: ${remarks || 'Review required'}`,
+          type: 'WARNING',
+          channel: 'IN_APP',
+          createdAt: timestamp,
+          read: false,
+          link: `/admin/review/${application.id}`
         });
 
         return NextResponse.json({ success: true, application: updated });
