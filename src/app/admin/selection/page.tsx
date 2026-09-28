@@ -30,7 +30,6 @@ import {
   Check,
   Ban
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 export default function SelectionCommitteePage() {
   const { currentUser } = useLanguage();
@@ -225,7 +224,7 @@ export default function SelectionCommitteePage() {
     setEmailSending(true);
 
     try {
-      const actionName = emailType === 'SELECTED' ? 'AWARD_FELLOWSHIP' : 'RAISE_DEFICIENCY';
+      const actionName = emailType === 'SELECTED' ? 'AWARD_FELLOWSHIP' : 'REJECT_APPLICATION';
       const categoryLabel = REASON_PRESETS.find(p => p.id === flagReasonCategory)?.label || 'Committee Evaluation';
       
       const remarksText = emailType === 'SELECTED'
@@ -255,14 +254,6 @@ export default function SelectionCommitteePage() {
         setEmailSending(false);
         setEmailSentSuccess(true);
         fetchApplications();
-
-        if (emailType === 'SELECTED') {
-          confetti({
-            particleCount: 80,
-            spread: 60,
-            origin: { y: 0.6 }
-          });
-        }
       }
     } catch (e) {
       console.error(e);
@@ -982,7 +973,7 @@ export default function SelectionCommitteePage() {
             <div className="bg-slate-950 rounded-2xl p-4 border border-slate-800 space-y-2 text-xs font-mono mb-6">
               <div className="flex justify-between">
                 <span className="text-slate-400">Sender (From):</span>
-                <span className="text-emerald-400 font-bold">Ministry of Tribal Affairs &lt;fellowships-mota@gov.in&gt;</span>
+                <span className="text-emerald-400 font-bold">Ministry of Tribal Affairs &lt;nileshchoudhary60309@gmail.com&gt;</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Recipient (To):</span>
@@ -992,7 +983,7 @@ export default function SelectionCommitteePage() {
                 <span className="text-slate-400">Subject:</span>
                 <span className="text-amber-300 font-bold">
                   {emailType === 'SELECTED'
-                    ? `🎉 Official Sanction Notice: ${targetEmailApp.schemeCode} Fellowship Award [${targetEmailApp.id}]`
+                    ? `Official Sanction Notice: ${targetEmailApp.schemeCode} Fellowship Award [${targetEmailApp.id}]`
                     : `[ACTION REQUIRED] Status Notice: ${targetEmailApp.schemeCode} Fellowship Evaluation [${targetEmailApp.id}]`}
                 </span>
               </div>
@@ -1067,11 +1058,11 @@ export default function SelectionCommitteePage() {
               {emailSentSuccess ? (
                 <span className="text-xs font-bold text-emerald-400 bg-emerald-950 px-3 py-2 rounded-xl border border-emerald-800 inline-flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>Automated Email & SMS notification simulated and logged successfully!</span>
+                  <span>Email notification dispatched and logged successfully!</span>
                 </span>
               ) : (
                 <span className="text-xs text-slate-400">
-                  Simulates instant email dispatch to scholar without requiring external SMTP credentials.
+                  Sends email notification via configured Gmail SMTP (nileshchoudhary60309@gmail.com).
                 </span>
               )}
 
@@ -1098,7 +1089,7 @@ export default function SelectionCommitteePage() {
                     ) : (
                       <>
                         <Send className="w-4 h-4" />
-                        <span>Simulate Dispatch Email & Record Decision</span>
+                        <span>Dispatch Email & Record Decision</span>
                       </>
                     )}
                   </button>

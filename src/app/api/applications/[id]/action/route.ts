@@ -6,7 +6,7 @@ import {
   addNotificationToStore
 } from '@/lib/store';
 import { DeficiencyNotice, VerificationLog } from '@/lib/types';
-import { sendRealDeficiencyEmail } from '@/lib/mailer';
+import { sendRealDeficiencyEmail, sendApplicationStatusUpdateEmail } from '@/lib/mailer';
 
 export async function POST(
   request: NextRequest,
@@ -136,6 +136,19 @@ export async function POST(
           link: '/portal'
         });
 
+        if (application.formData?.emailAddress) {
+          sendApplicationStatusUpdateEmail({
+            toEmail: application.formData.emailAddress,
+            applicantName: application.applicantName,
+            applicationId: application.id,
+            schemeTitle: application.schemeTitle,
+            status: 'SCRUTINY_VERIFIED',
+            statusTitle: 'Documents Verified & Scrutiny Complete',
+            message: 'All your submitted documents have passed sovereign AI validation and been verified authentic by the MoTA Scrutiny Cell. Your application is now forwarded to the Statutory Selection Committee.',
+            remarks: remarks || 'All submitted documents verified authentic.'
+          }).catch(err => console.error('[SMTP] Verification email error:', err));
+        }
+
         return NextResponse.json({ success: true, application: updated });
       }
 
@@ -155,6 +168,19 @@ export async function POST(
           committeeStatus: 'APPROVED',
           verificationLogs: [...application.verificationLogs, newLog]
         });
+
+        if (application.formData?.emailAddress) {
+          sendApplicationStatusUpdateEmail({
+            toEmail: application.formData.emailAddress,
+            applicantName: application.applicantName,
+            applicationId: application.id,
+            schemeTitle: application.schemeTitle,
+            status: 'COMMITTEE_SHORTLISTED',
+            statusTitle: 'MoTA Selection Committee Shortlisted',
+            message: `Your fellowship application for ${application.schemeTitle} has been evaluated by the Statutory Selection Committee and shortlisted for provisional fellowship award.`,
+            remarks: remarks || 'Recommended by Selection Committee for Provisional Fellowship Award.'
+          }).catch(err => console.error('[SMTP] Shortlist email error:', err));
+        }
 
         return NextResponse.json({ success: true, application: updated });
       }
@@ -178,8 +204,8 @@ export async function POST(
         addNotificationToStore({
           id: `notif-${Date.now()}`,
           userId: application.applicantId,
-          title: '🎉 Congratulations! Fellowship Award Sanctioned',
-          titleHi: '🎉 बधाई! राष्ट्रीय फैलोशिप स्वीकृत की गई',
+          title: 'Fellowship Award Sanctioned',
+          titleHi: 'राष्ट्रीय फैलोशिप स्वीकृत की गई',
           message: `Your fellowship under ${application.schemeTitle} has been sanctioned. Download award letter from portal.`,
           messageHi: `आपका फैलोशिप आवेदन स्वीकृत हो चुका है। पोर्टल से स्वीकृति पत्र डाउनलोड करें।`,
           type: 'SUCCESS',
@@ -188,6 +214,20 @@ export async function POST(
           read: false,
           link: '/portal'
         });
+
+        if (application.formData?.emailAddress) {
+          sendApplicationStatusUpdateEmail({
+            toEmail: application.formData.emailAddress,
+            applicantName: application.applicantName,
+            applicationId: application.id,
+            schemeTitle: application.schemeTitle,
+            status: 'PROVISIONALLY_SELECTED',
+            statusTitle: 'Fellowship Award Sanctioned (PFMS DBT Initiated)',
+            message: `We are pleased to inform you that your fellowship under ${application.schemeTitle} has been officially approved and sanctioned by the Ministry of Tribal Affairs. Direct Benefit Transfer (DBT) has been initiated to your Aadhaar-linked account (${application.formData?.bankName || 'PFMS Linked Bank'}).`,
+            remarks: remarks || 'Fellowship Sanctioned under Presidential MoTA Notification. DBT initiated.',
+            actionRequired: 'Please log into your VidyaSetu Student Portal to download your Official Sanction Order PDF.'
+          }).catch(err => console.error('[SMTP] Fellowship award email error:', err));
+        }
 
         return NextResponse.json({ success: true, application: updated });
       }
@@ -243,6 +283,20 @@ export async function POST(
           read: false,
           link: '/portal'
         });
+
+        if (application.formData?.emailAddress) {
+          sendApplicationStatusUpdateEmail({
+            toEmail: application.formData.emailAddress,
+            applicantName: application.applicantName,
+            applicationId: application.id,
+            schemeTitle: application.schemeTitle,
+            status: 'REJECTED',
+            statusTitle: 'Scholarship Application Evaluation Notice: Not Selected',
+            message: `Your application ${application.id} for ${application.schemeTitle} was evaluated by the Selection Committee but was not selected for this sanction cycle.`,
+            remarks: remarks || 'Application does not meet statutory scheme criteria or merit allocation cut-off.',
+            actionRequired: 'You may log into the portal to review detailed committee remarks or submit a grievance.'
+          }).catch(err => console.error('[SMTP] Rejection email error:', err));
+        }
 
         return NextResponse.json({ success: true, application: updated });
       }

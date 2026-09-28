@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { bookOfficeVisitSlot, getApplicationById } from '@/lib/store';
+import { sendOfficeVisitBookingEmail } from '@/lib/mailer';
 
 export async function POST(
   request: NextRequest,
@@ -26,6 +27,20 @@ export async function POST(
     }
 
     const booking = bookOfficeVisitSlot(appId, officeId, date, timeSlot);
+
+    if (app.formData?.emailAddress) {
+      sendOfficeVisitBookingEmail({
+        toEmail: app.formData.emailAddress,
+        applicantName: app.applicantName,
+        applicationId: app.id,
+        officeName: booking.officeName,
+        officeAddress: booking.officeAddress,
+        date: booking.date,
+        timeSlot: booking.timeSlot,
+        contactOfficer: booking.contactOfficer,
+        referenceNo: booking.referenceNo
+      }).catch(err => console.error('[SMTP] Office visit booking email error:', err));
+    }
 
     return NextResponse.json({
       success: true,

@@ -26,7 +26,6 @@ import {
   RefreshCw,
   GraduationCap
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 function ApplyContent() {
   const { t, lang, currentUser } = useLanguage();
@@ -207,11 +206,6 @@ function ApplyContent() {
       if (data.success) {
         setSubmittedAppId(data.application.id);
         setCurrentStep(6);
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
       }
     } catch (e) {
       console.error(e);
@@ -361,6 +355,18 @@ function ApplyContent() {
                   <option value="FEMALE">Female (33% Sub-Quota Eligible)</option>
                   <option value="OTHER">Other</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-700 font-bold mb-1">Email Address for Status Updates *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. name@gmail.com"
+                  value={formData.emailAddress}
+                  onChange={e => setFormData({ ...formData, emailAddress: e.target.value })}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-medium text-slate-900"
+                />
               </div>
 
               <div>
@@ -940,10 +946,10 @@ function ApplyContent() {
                 APPLICATION SUBMITTED SUCCESSFULLY
               </span>
               <h2 className="text-2xl font-black text-slate-900 mt-2">
-                Congratulations, {formData.fullName}!
+                Application Successfully Submitted: {formData.fullName}
               </h2>
               <p className="text-xs text-slate-600 max-w-md mx-auto mt-1">
-                Your application has cleared in-browser edge blur and AI validation. It is now entering the 48-Hour Spotlight Scrutiny Queue.
+                Your application has cleared in-browser edge blur and AI validation. A confirmation email notice has been dispatched to <strong className="text-slate-800 font-mono">{formData.emailAddress}</strong>.
               </p>
             </div>
 

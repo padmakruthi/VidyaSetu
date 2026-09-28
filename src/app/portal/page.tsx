@@ -27,7 +27,6 @@ import {
   ArrowRight,
   X
 } from 'lucide-react';
-import confetti from 'canvas-confetti';
 import { STWelfareOffice, VisitSlotBooking } from '@/lib/types';
 
 export default function PortalPage() {
@@ -126,9 +125,6 @@ export default function PortalPage() {
       setApplications(prev => prev.map(a => (a.id === updated.id ? updated : a)));
 
       setBookingModalOpen(false);
-      try {
-        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-      } catch (err) {}
     } catch (err: any) {
       setBookingLoading(false);
       setBookingError(err.message || 'Network error');
@@ -228,11 +224,6 @@ export default function PortalPage() {
       if (resData.success) {
         setSelectedApp(resData.application);
         setResubmitSuccess(true);
-        confetti({
-          particleCount: 80,
-          spread: 60,
-          origin: { y: 0.5 }
-        });
       }
     } catch (e) {
       console.error(e);

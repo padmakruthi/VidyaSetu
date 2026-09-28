@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getApplications, createApplication } from '@/lib/store';
 import { computeAiMetrics } from '@/lib/ocrEngine';
 import { Application } from '@/lib/types';
+import { sendApplicationSubmittedEmail } from '@/lib/mailer';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -92,6 +93,19 @@ export async function POST(request: NextRequest) {
     };
 
     const saved = createApplication(newApplication);
+
+    // Send confirmation email to applicant if email address is provided
+    const applicantEmail = formData.emailAddress || '';
+    if (applicantEmail) {
+      sendApplicationSubmittedEmail({
+        toEmail: applicantEmail,
+        applicantName: saved.applicantName,
+        applicationId: saved.id,
+        schemeCode: saved.schemeCode,
+        schemeTitle: saved.schemeTitle,
+        submittedAt: saved.submittedAt
+      }).catch(err => console.error('[SMTP] Application submitted email error:', err));
+    }
 
     return NextResponse.json({ success: true, application: saved });
   } catch (error: any) {
