@@ -408,9 +408,10 @@ export default function SelectionCommitteePage() {
                     const isAwarded = app.status === 'PROVISIONALLY_SELECTED';
                     const isRejected = app.status === 'REJECTED';
                     const isUnderScrutiny = app.status === 'UNDER_SCRUTINY';
+                    const hasBlurryDoc = app.documents.some(d => d.isBlurry || d.laplacianVarianceScore < 100 || d.ocrStatus === 'FLAGGED') || app.edgeIqaStatus === 'FAILED';
 
                     return (
-                      <tr key={app.id} className="hover:bg-slate-50/80 transition-colors">
+                      <tr key={app.id} className={`hover:bg-slate-50/80 transition-colors ${hasBlurryDoc ? 'bg-rose-50/40' : ''}`}>
                         {/* Rank */}
                         <td className="py-4 px-4">
                           <span
@@ -426,17 +427,32 @@ export default function SelectionCommitteePage() {
 
                         {/* Scholar Details */}
                         <td className="py-4 px-4">
-                          <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                          <div className="font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
                             <span>{app.applicantName}</span>
                             {app.isPvtg && (
                               <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-bold px-1.5 py-0.2 rounded">
-                                PVTG
+                                PVTG Category 1
+                              </span>
+                            )}
+                            {hasBlurryDoc && (
+                              <span className="bg-rose-100 text-rose-900 border border-rose-300 text-[9px] font-bold px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                                <AlertTriangle className="w-2.5 h-2.5 text-rose-600" />
+                                <span>BLURRY SCAN FLAGGED</span>
                               </span>
                             )}
                           </div>
                           <div className="text-[11px] text-slate-500 font-mono">
                             {app.id} • {app.applicantTribe} ({app.applicantState})
                           </div>
+                          {app.aiHighlights && app.aiHighlights.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {app.aiHighlights.slice(0, 2).map((h, i) => (
+                                <span key={i} className="text-[9px] bg-purple-50 text-purple-800 border border-purple-200 px-1.5 py-0.2 rounded">
+                                  ✨ {h}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </td>
 
                         {/* Priority Tier */}
@@ -542,14 +558,20 @@ export default function SelectionCommitteePage() {
                             <Flag className="w-3.5 h-3.5 inline text-amber-600" />
                           </button>
 
-                          {/* Approve / Sanction */}
+                          {/* Approve / Sanction with Slot Allocation */}
                           {!isAwarded && (
                             <button
                               onClick={() => handleOpenEmailDrawer(app, 'SELECTED')}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1"
+                              disabled={hasBlurryDoc}
+                              className={`${
+                                hasBlurryDoc
+                                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                  : 'bg-purple-600 hover:bg-purple-700 text-white'
+                              } px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1`}
+                              title={hasBlurryDoc ? 'Approval blocked due to blurry scan flag' : '1-Click AI Slot Allocation & Award'}
                             >
-                              <Check className="w-3.5 h-3.5" />
-                              <span>Approve</span>
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span>{hasBlurryDoc ? 'Blur Blocked' : '1-Click Approve Slot (16 Available)'}</span>
                             </button>
                           )}
 
@@ -635,9 +657,10 @@ export default function SelectionCommitteePage() {
                     const isAwarded = app.status === 'PROVISIONALLY_SELECTED';
                     const isRejected = app.status === 'REJECTED';
                     const isUnderScrutiny = app.status === 'UNDER_SCRUTINY';
+                    const hasBlurryDoc = app.documents.some(d => d.isBlurry || d.laplacianVarianceScore < 100 || d.ocrStatus === 'FLAGGED') || app.edgeIqaStatus === 'FAILED';
 
                     return (
-                      <tr key={app.id} className="hover:bg-slate-50/80 transition-colors">
+                      <tr key={app.id} className={`hover:bg-slate-50/80 transition-colors ${hasBlurryDoc ? 'bg-rose-50/40' : ''}`}>
                         {/* Rank */}
                         <td className="py-4 px-4">
                           <span
@@ -653,7 +676,7 @@ export default function SelectionCommitteePage() {
 
                         {/* Scholar */}
                         <td className="py-4 px-4">
-                          <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                          <div className="font-bold text-slate-900 flex flex-wrap items-center gap-1.5">
                             <span>{app.applicantName}</span>
                             {app.isPwd && (
                               <span className="bg-indigo-100 text-indigo-900 border border-indigo-300 text-[9px] font-bold px-1.5 py-0.2 rounded">
@@ -662,13 +685,28 @@ export default function SelectionCommitteePage() {
                             )}
                             {app.isPvtg && (
                               <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-bold px-1.5 py-0.2 rounded">
-                                PVTG
+                                PVTG Category 2
+                              </span>
+                            )}
+                            {hasBlurryDoc && (
+                              <span className="bg-rose-100 text-rose-900 border border-rose-300 text-[9px] font-bold px-1.5 py-0.2 rounded flex items-center gap-0.5">
+                                <AlertTriangle className="w-2.5 h-2.5 text-rose-600" />
+                                <span>BLURRY SCAN FLAGGED</span>
                               </span>
                             )}
                           </div>
                           <div className="text-[11px] text-slate-500 font-mono">
                             {app.id} • {app.applicantTribe} ({app.applicantState})
                           </div>
+                          {app.aiHighlights && app.aiHighlights.length > 0 && (
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {app.aiHighlights.slice(0, 2).map((h, i) => (
+                                <span key={i} className="text-[9px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-1.5 py-0.2 rounded">
+                                  ✨ {h}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </td>
 
                         {/* Institute Priority */}
@@ -764,14 +802,20 @@ export default function SelectionCommitteePage() {
                             <Flag className="w-3.5 h-3.5 inline text-amber-600" />
                           </button>
 
-                          {/* Approve / Sanction */}
+                          {/* Approve / Sanction with Slot Allocation */}
                           {!isAwarded && (
                             <button
                               onClick={() => handleOpenEmailDrawer(app, 'SELECTED')}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1"
+                              disabled={hasBlurryDoc}
+                              className={`${
+                                hasBlurryDoc
+                                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                              } px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shadow-xs inline-flex items-center gap-1`}
+                              title={hasBlurryDoc ? 'Approval blocked due to blurry scan flag' : '1-Click AI Slot Allocation & Award'}
                             >
-                              <Check className="w-3.5 h-3.5" />
-                              <span>Approve</span>
+                              <Sparkles className="w-3.5 h-3.5" />
+                              <span>{hasBlurryDoc ? 'Blur Blocked' : '1-Click Approve Slot (712 Available)'}</span>
                             </button>
                           )}
 

@@ -23,12 +23,16 @@ import {
   UserPlus
 } from 'lucide-react';
 import { NotificationDrawer } from './NotificationDrawer';
+import { IndianFlag } from './IndianFlag';
+import { VidyasetuLogo } from './VidyasetuLogo';
+import { SplashScreen } from './SplashScreen';
 
 export function Header() {
   const router = useRouter();
   const { t, lang, currentUser, switchUser, notificationsOpen, setNotificationsOpen } = useLanguage();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [splashOpen, setSplashOpen] = useState(false);
 
   const isApplicant = currentUser?.role === 'APPLICANT';
   const isOfficer = currentUser && ['SCRUTINY_OFFICER', 'SELECTION_COMMITTEE', 'ADMIN'].includes(currentUser.role);
@@ -37,47 +41,54 @@ export function Header() {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (e) {}
-    // Reset session
-    router.push('/login');
+    if (switchUser) {
+      await switchUser(null as any);
+    }
+    // Redirect directly to starting Home Page
+    router.push('/');
   };
 
   return (
     <>
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+      {/* Interactive Splash Screen Component */}
+      <SplashScreen forceShow={splashOpen} onClose={() => setSplashOpen(false)} />
+
+      {/* Sovereign Tricolor Gradient Top Strip */}
+      <div className="h-1 bg-linear-to-r from-amber-500 via-emerald-500 to-blue-600 w-full" />
+
+      <header className="bg-white/95 backdrop-blur-md border-b border-slate-200/90 sticky top-0 z-40 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            {/* Left: Emblem + Brand */}
-            <div className="flex items-center space-x-3 sm:space-x-4">
-              <Link href="/" className="flex items-center space-x-3 group">
-                {/* Simulated National Emblem SVG */}
-                <div className="w-12 h-12 bg-linear-to-b from-amber-600 via-amber-700 to-amber-900 rounded-full p-1.5 flex items-center justify-center shadow-md border-2 border-amber-300">
-                  <div className="text-white text-center font-serif leading-none">
-                    <span className="block text-[15px] font-black tracking-widest">सत्य</span>
-                    <span className="block text-[8px] font-semibold text-amber-200 uppercase tracking-tighter">MoTA</span>
-                  </div>
-                </div>
+            {/* Left: VidyaSetu Logo Image & Brand Title */}
+            <div className="flex items-center space-x-3 shrink-0">
+              <Link href="/" className="flex items-center space-x-2.5 group">
+                {/* Exact VidyaSetu Logo Image */}
+                <img
+                  src="/vidyasetu_logo.png"
+                  alt="VidyaSetu Logo"
+                  className="h-11 sm:h-12 w-auto object-contain shrink-0 transition-transform duration-300 group-hover:scale-105"
+                />
 
-                <div>
+                <div className="flex flex-col justify-center">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight group-hover:text-blue-900 transition-colors">
+                    <span className="text-lg sm:text-xl font-black text-slate-900 tracking-tight group-hover:text-blue-900 transition-colors">
                       {lang === 'hi' ? 'विद्यासेतु' : 'VidyaSetu'}
                     </span>
-                    <span className="bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded-full border border-emerald-300 inline-flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-emerald-600" />
+                    <IndianFlag size="sm" />
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-1.5 py-0.2 rounded-full border border-emerald-300 hidden sm:inline-flex items-center gap-0.5">
+                      <Sparkles className="w-2.5 h-2.5 text-emerald-600" />
                       AI Powered
                     </span>
                   </div>
-                  <p className="text-[11px] sm:text-xs text-slate-600 font-medium line-clamp-1">
-                    {lang === 'hi'
-                      ? 'जनजातीय कार्य मंत्रालय • भारत सरकार'
-                      : 'Ministry of Tribal Affairs • Government of India'}
+                  <p className="text-[9px] sm:text-[10px] text-emerald-700 font-bold uppercase tracking-wider font-mono line-clamp-1">
+                    {lang === 'hi' ? 'हर विद्यार्थी का, सफलता का मार्ग' : 'HAR VIDYARTHI KA, SAFALTA KA MARG'}
                   </p>
                 </div>
               </Link>
             </div>
 
             {/* Middle: Primary Navigation Desktop */}
-            <nav className="hidden lg:flex items-center space-x-1 font-medium text-sm">
+            <nav className="hidden lg:flex items-center space-x-1 font-medium text-xs xl:text-sm ml-4 shrink-0">
               <Link
                 href="/"
                 className={`px-3 py-2 rounded-md transition-colors ${
@@ -85,6 +96,24 @@ export function Header() {
                 }`}
               >
                 {t.home}
+              </Link>
+
+              <Link
+                href="/about"
+                className={`px-3 py-2 rounded-md transition-colors ${
+                  pathname === '/about' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
+                }`}
+              >
+                About Us
+              </Link>
+
+              <Link
+                href="/contact"
+                className={`px-3 py-2 rounded-md transition-colors ${
+                  pathname === '/contact' ? 'text-blue-900 bg-blue-50 font-semibold' : 'text-slate-700 hover:text-blue-900 hover:bg-slate-100'
+                }`}
+              >
+                Contact Us
               </Link>
 
               {isApplicant && (
@@ -175,8 +204,18 @@ export function Header() {
               )}
             </nav>
 
-            {/* Right: Notifications + Sign In / Sign Up or Profile & Logout */}
+            {/* Right: Notifications + Splash Intro + Sign In / Sign Up or Profile & Logout */}
             <div className="flex items-center space-x-2 sm:space-x-3">
+              {/* Splash Intro Button */}
+              <button
+                onClick={() => setSplashOpen(true)}
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition-colors"
+                title="View VidyaSetu Splash Banner & Slogan"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
+                <span>Splash Slogan</span>
+              </button>
+
               {/* Notification Button */}
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}

@@ -23,7 +23,7 @@ export function NotificationDrawer() {
 
   // Filter notifications for current user or show relevant system alerts
   const userNotifs = initialNotifications.filter(
-    n => n.userId === currentUser.id || currentUser.role !== 'APPLICANT'
+    n => !currentUser || n.userId === currentUser.id || currentUser.role !== 'APPLICANT'
   );
 
   return (

@@ -22,6 +22,8 @@ import {
   Users2,
   AlertCircle
 } from 'lucide-react';
+import { IndianFlag } from '@/components/IndianFlag';
+import { ScholarshipCarousel } from '@/components/ScholarshipCarousel';
 
 export default function Home() {
   const router = useRouter();
@@ -76,7 +78,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto relative z-10 text-center">
           {/* Top Tag & Sovereign Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs text-amber-300 font-medium mb-6 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <IndianFlag size="sm" />
             <span className="font-bold tracking-wide">MINISTRY OF TRIBAL AFFAIRS</span>
             <span className="text-white/40">•</span>
             <span className="bg-amber-400/20 text-amber-200 px-2.5 py-0.5 rounded font-mono font-semibold">
@@ -204,6 +206,11 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Interactive Scholarship Available Carousel Slider */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-4">
+        <ScholarshipCarousel />
       </section>
 
       {/* 2. 5-Stage Sovereign Lifecycle Audit Trail Strip (PPT Slide 2) */}
@@ -631,6 +638,62 @@ export default function Home() {
                 Est. ₹1.80 Cr / year savings counter, state-wise breakdowns, and PFMS tracking.
               </p>
             </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. SIH Team Details Section: Parallaxx_24951A05M7 (Team ID: 171647) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm space-y-6">
+          <div className="border-b border-slate-200 pb-4 flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <span className="text-xs font-mono font-bold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200 inline-block mb-1">
+                SIH 2026 PROJECT TEAM SPECIFICATION
+              </span>
+              <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                <Users2 className="w-6 h-6 text-emerald-600" />
+                <span>Team: Parallaxx_24951A05M7</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Official Smart India Hackathon 2026 Team Details
+              </p>
+            </div>
+
+            <div className="bg-slate-900 text-white px-4 py-2 rounded-xl text-xs font-mono font-bold">
+              Team ID: <span className="text-amber-400">171647</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {[
+              { name: 'Bhimavarapu Navya Sri', role: 'Team Leader', color: 'bg-amber-600', avatar: 'NS' },
+              { name: 'B P S Kruthi', role: 'Team Member', color: 'bg-emerald-600', avatar: 'BK' },
+              { name: 'Navadeep Vandhanapu', role: 'Team Member', color: 'bg-blue-600', avatar: 'NV' },
+              { name: 'Navadeep Chandanam', role: 'Team Member', color: 'bg-indigo-600', avatar: 'NC' },
+              { name: 'D Nilesh Choudhary', role: 'Team Member', color: 'bg-purple-600', avatar: 'NC' },
+              { name: 'Chirra Karthika', role: 'Team Member', color: 'bg-rose-600', avatar: 'CK' }
+            ].map((member, idx) => (
+              <div
+                key={idx}
+                className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-emerald-300 transition-all shadow-xs flex items-center gap-3.5"
+              >
+                <div className={`w-11 h-11 ${member.color} text-white rounded-xl flex items-center justify-center font-black text-sm shadow-xs shrink-0`}>
+                  {member.avatar}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">{member.name}</h3>
+                  <span
+                    className={`inline-block text-[11px] font-semibold px-2 py-0.5 rounded-full mt-0.5 ${
+                      member.role === 'Team Leader'
+                        ? 'bg-amber-100 text-amber-900 border border-amber-300 font-bold'
+                        : 'bg-slate-200 text-slate-700'
+                    }`}
+                  >
+                    {member.role}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </section>

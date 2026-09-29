@@ -303,6 +303,18 @@ function SignupContent() {
                 </p>
               </div>
 
+              {!realEmailSent && (
+                <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 space-y-1">
+                  <div className="font-bold flex items-center gap-1.5 text-amber-900">
+                    <AlertCircle className="w-4 h-4 text-amber-600" />
+                    <span>Demo / Test OTP Code</span>
+                  </div>
+                  <p className="text-[11px] text-amber-800 leading-relaxed">
+                    Real email delivery was skipped or blocked by network security. Your verification code is: <strong className="font-mono text-xs bg-amber-200/80 text-amber-950 px-2 py-0.5 rounded border border-amber-400 font-black">{generatedOtp}</strong>
+                  </p>
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">6-Digit Verification Code</label>
                 <input

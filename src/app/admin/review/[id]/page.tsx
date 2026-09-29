@@ -98,9 +98,33 @@ export default function SpotlightReviewPage() {
   }
 
   const activeDoc = application.documents[selectedDocIndex] || application.documents[0];
+  const hasBlurryDoc = application.documents.some(d => d.isBlurry || d.laplacianVarianceScore < 100 || d.ocrStatus === 'FLAGGED') || application.edgeIqaStatus === 'FAILED';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+      {/* Blurry Document AI Warning Banner */}
+      {hasBlurryDoc && (
+        <div className="bg-rose-50 border-2 border-rose-400 p-4 rounded-2xl flex items-center justify-between text-rose-950 text-xs shadow-md">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="w-6 h-6 text-rose-600 shrink-0" />
+            <div>
+              <span className="font-black text-sm text-rose-900 block">
+                ⚠️ CRITICAL AI SECURITY ALERT: BLURRY SCAN DETECTED
+              </span>
+              <p className="text-xs text-rose-800 font-medium mt-0.5">
+                One or more document scans failed Laplacian Variance Edge Blur testing (Score &lt; 100). Approval is blocked until a clear certificate is re-uploaded.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setDeficiencyModalOpen(true)}
+            className="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-xl text-xs shrink-0 shadow-sm"
+          >
+            Request Re-upload &rarr;
+          </button>
+        </div>
+      )}
+
       {/* Top Header Bar */}
       <div className="bg-white rounded-2xl border border-slate-200 p-4 sm:p-5 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-3">
@@ -121,11 +145,14 @@ export default function SpotlightReviewPage() {
               <span className="text-[10px] font-bold bg-purple-100 text-purple-900 px-2 py-0.5 rounded">
                 {application.schemeCode}
               </span>
+              <span className="text-[10px] font-bold bg-emerald-100 text-emerald-900 px-2 py-0.5 rounded font-mono">
+                {application.schemeCode === 'NOS' ? '16 / 20 Slots Available' : '712 / 750 Slots Available'}
+              </span>
             </div>
             <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-3">
               <span>Jaro-Winkler: <strong className="text-emerald-700 font-mono">{application.avgJaroWinklerScore}%</strong></span>
               <span>•</span>
-              <span>Edge Blur Gate: <strong className="text-emerald-700">{application.edgeIqaStatus}</strong></span>
+              <span>Edge Blur Gate: <strong className={hasBlurryDoc ? 'text-rose-600 font-bold' : 'text-emerald-700'}>{application.edgeIqaStatus}</strong></span>
               <span>•</span>
               <span>AI Risk: <strong className="text-slate-900">{application.aiRiskScore}/100</strong></span>
             </div>
@@ -145,11 +172,16 @@ export default function SpotlightReviewPage() {
 
           <button
             onClick={() => handleAction('VERIFY_APPLICATION')}
-            disabled={actionInProgress}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1.5"
+            disabled={actionInProgress || hasBlurryDoc}
+            className={`${
+              hasBlurryDoc
+                ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+            } px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-sm inline-flex items-center gap-1.5`}
+            title={hasBlurryDoc ? 'Approval blocked due to blurry document scan' : '1-Click AI Slot Allocation & Award'}
           >
             <CheckCircle2 className="w-4 h-4" />
-            <span>Approve & Fast-Track (30s)</span>
+            <span>{hasBlurryDoc ? 'Approval Blocked (Blurry)' : '1-Click AI Approve Slot (30s)'}</span>
           </button>
 
           <button

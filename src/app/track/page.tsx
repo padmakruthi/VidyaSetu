@@ -15,7 +15,8 @@ import {
   Smartphone,
   CreditCard,
   Building,
-  RefreshCw
+  RefreshCw,
+  Award
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -237,6 +238,47 @@ function TrackContent() {
             hasDeficiency={application.status === 'DEFICIENCY_FLAGGED'}
             pfmsUtr={application.formData.pfmsUtrNumber}
           />
+
+          {/* Sanctioned Award Alert Banner (when PROVISIONALLY_SELECTED) */}
+          {application.status === 'PROVISIONALLY_SELECTED' && (
+            <div className="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-6 shadow-md">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-md">
+                    <Award className="w-7 h-7" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold text-emerald-900 bg-emerald-200 border border-emerald-400 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                        ✓ FELLOWSHIP SANCTIONED & AWARDED
+                      </span>
+                      <span className="text-[10px] font-mono bg-white text-emerald-800 px-2 py-0.5 rounded border border-emerald-300 font-bold">
+                        PFMS DBT READY
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-black text-emerald-950 mt-1">
+                      Congratulations {application.applicantName}! Sovereign Award Sanctioned
+                    </h3>
+                    <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
+                      Your application for <strong>{application.schemeTitle} ({application.schemeCode})</strong> has been formally approved by the Statutory Selection Committee.
+                    </p>
+                    <div className="mt-2 text-xs text-emerald-900 font-mono flex flex-wrap items-center gap-4">
+                      <span>Sanction No: <strong>MOTA/{application.schemeCode}/2026/SANCT-{application.id.slice(-4)}</strong></span>
+                      <span>PFMS UTR: <strong className="text-blue-900">{application.formData.pfmsUtrNumber || 'PFMS-UTR-9982412'}</strong></span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => alert(`Official Sanction Order for ${application.id} generated successfully! Digital Signature verified by MoTA Secretariat.`)}
+                  className="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-3 rounded-xl text-xs font-bold transition-all shadow-md shrink-0 inline-flex items-center gap-2"
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span>Download Sanction Order (PDF)</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Deficiency Notice Alert (if applicable) with 1-Click Fix */}
           {application.deficiencyNotices.length > 0 && !application.deficiencyNotices[0].resolved && (

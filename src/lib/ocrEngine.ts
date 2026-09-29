@@ -86,7 +86,7 @@ export function simulateDocumentOcr(
   docType: string,
   fileName: string,
   formData: Partial<ApplicationFormData>,
-  forceDeficiency: boolean = false
+  forceMode: boolean | 'CLEAN' | 'BLURRY' | 'NO_TEXT' = false
 ): OcrAnalysisResult {
   const applicantName = formData.fullName || 'Arun Soren';
   const tribe = formData.tribeCommunity || 'Santhal';
@@ -94,16 +94,36 @@ export function simulateDocumentOcr(
   const certNo = formData.casteCertificateNo || 'ST/OD/MAY/2021/8941';
   const income = formData.annualFamilyIncome || 240000;
 
+  const mode = typeof forceMode === 'string' ? forceMode : forceMode ? 'BLURRY' : 'CLEAN';
+
+  // Handle NO_TEXT mode (blank paper / unreadable non-document scan)
+  if (mode === 'NO_TEXT') {
+    return {
+      documentType: docType,
+      ocrScore: 0,
+      status: 'FLAGGED',
+      laplacianVarianceScore: 24.5,
+      isBlurry: true,
+      digiLockerVerified: false,
+      extractedFields: [],
+      aiNotes: [
+        '⚠️ CRITICAL AI SECURITY ALERT: NO PAPER / NO TEXT FOUND IN SCAN.',
+        'Zero recognized certificate tokens, official stamps, or legal text lines detected.',
+        'Upload rejected. Please capture or upload a valid paper certificate.'
+      ]
+    };
+  }
+
   const bhashini = resolveBhashiniTransliteration(applicantName, tribe);
 
-  // Default clean Laplacian variance: 142.5 (Passes >= 100 threshold)
-  // If deficiency: 48.0 (Fails < 100 threshold)
-  const laplacianScore = forceDeficiency ? 48.4 : 142.8;
+  // Default clean Laplacian variance: 142.8 (Passes >= 100 threshold)
+  // If BLURRY: 48.4 (Fails < 100 threshold)
+  const laplacianScore = mode === 'BLURRY' ? 48.4 : 142.8;
   const isBlurry = laplacianScore < 100;
 
   switch (docType) {
     case 'CASTE_CERTIFICATE': {
-      if (forceDeficiency || isBlurry) {
+      if (mode === 'BLURRY' || isBlurry) {
         return {
           documentType: docType,
           ocrScore: 54,
@@ -115,30 +135,18 @@ export function simulateDocumentOcr(
             {
               fieldName: 'candidateName',
               label: 'Candidate Name',
-              value: 'A. Soren (Initials only)',
-              confidence: 62,
+              value: 'A. Soren (Blurry Initials)',
+              confidence: 42,
               matchesForm: false,
               formValue: applicantName,
-              jaroWinklerScore: 0.72,
+              jaroWinklerScore: 0.62,
               boundingBox: { x: 120, y: 180, width: 220, height: 35 },
-              remarks: 'Jaro-Winkler 72% (< 92% threshold): Initials used instead of full legal name'
-            },
-            {
-              fieldName: 'casteCategory',
-              label: 'Community Specified',
-              value: 'OBC / Backward Class',
-              confidence: 88,
-              matchesForm: false,
-              formValue: `ST - ${tribe}`,
-              jaroWinklerScore: 0.35,
-              boundingBox: { x: 120, y: 240, width: 250, height: 35 },
-              remarks: 'Critical: Certificate does not specify Scheduled Tribe (ST)'
+              remarks: 'Laplacian Score 48.4 < 100: Document scan is blurry & unreadable'
             }
           ],
           aiNotes: [
-            'EDGE BLUR FILTER: Laplacian variance score is 48.4 (< 100 threshold). Retake recommended before human submission.',
-            'Jaro-Winkler similarity below 92% threshold for legal name validation.',
-            'Zero autonomous rejections policy: Flagged for officer spotlight review.'
+            'EDGE BLUR FILTER: Laplacian variance score is 48.4 (< 100 threshold). Sharp retake required.',
+            'Document scan blocked from approval until scholar re-uploads clear certificate.'
           ]
         };
       }

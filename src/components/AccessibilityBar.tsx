@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useLanguage } from './LanguageContext';
 import { initialUsers } from '@/lib/store';
 import { Eye, Type, Globe, UserCheck, ShieldCheck } from 'lucide-react';
+import { IndianFlag } from './IndianFlag';
 
 export function AccessibilityBar() {
   const router = useRouter();
@@ -21,15 +22,9 @@ export function AccessibilityBar() {
 
   return (
     <div className="bg-slate-900 text-slate-200 text-xs border-b border-slate-800 px-3 py-1.5 flex flex-wrap items-center justify-between gap-2 z-50">
-      {/* Tricolor stripe and Govt Label */}
+      {/* Tricolor Tiranga Flag and Govt Label */}
       <div className="flex items-center space-x-2">
-        <div className="flex h-3 w-5 rounded-xs overflow-hidden shadow-xs border border-white/20">
-          <div className="h-1 bg-amber-500 w-full" />
-          <div className="h-1 bg-white w-full flex items-center justify-center">
-            <div className="w-0.5 h-0.5 rounded-full bg-blue-900" />
-          </div>
-          <div className="h-1 bg-emerald-600 w-full" />
-        </div>
+        <IndianFlag size="sm" />
         <span className="font-medium tracking-wide">
           {lang === 'hi' ? 'भारत सरकार | जनजातीय कार्य मंत्रालय' : 'GOVERNMENT OF INDIA | MINISTRY OF TRIBAL AFFAIRS'}
         </span>

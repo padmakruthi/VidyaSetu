@@ -67,6 +67,7 @@ export interface DocumentItem {
   extractedFields: ExtractedField[];
   aiNotes: string[];
   samplePreviewType: 'caste' | 'income' | 'net' | 'offer' | 'proposal' | 'passport';
+  previewUrl?: string;
 }
 
 export interface DeficiencyNotice {

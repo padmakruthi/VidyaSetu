@@ -18,12 +18,18 @@ function createTransporter() {
   if (!isConfigured) return null;
 
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    family: 4,
     auth: {
       user: smtpEmail,
       pass: smtpPass
+    },
+    tls: {
+      rejectUnauthorized: false
     }
-  });
+  } as any);
 }
 
 /**
@@ -86,7 +92,7 @@ export async function sendRealOtpEmail({ toEmail, otp, studentName }: SendOtpPar
   const demoNotice = isDemoRedirect ? ` [TEST FOR: ${toEmail}]` : '';
 
   const mailOptions = {
-    from: `"VidyaSetu (MoTA)" <${smtpEmail}>`,
+    from: smtpEmail,
     to: targetEmail,
     subject: `Your VidyaSetu Verification Code: ${otp}${demoNotice}`,
     text: `Dear ${recipientName},\n\nThank you for registering on VidyaSetu, Ministry of Tribal Affairs. Your 6-digit One Time Password (OTP) for student account verification is:\n\n${otp}\n\nThis OTP is valid for 10 minutes. Please do not share this code with anyone.\n\nMinistry of Tribal Affairs, Government of India`,
@@ -157,7 +163,7 @@ export async function sendApplicationSubmittedEmail({
   const demoNotice = isDemoRedirect ? ` [TEST FOR: ${toEmail}]` : '';
 
   const mailOptions = {
-    from: `"VidyaSetu (MoTA)" <${smtpEmail}>`,
+    from: smtpEmail,
     to: targetEmail,
     subject: `Application Submitted: ${applicationId} (${schemeCode})${demoNotice}`,
     text: `Dear ${applicantName},\n\nYour application for ${schemeTitle} has been successfully submitted on VidyaSetu.\n\nApplication ID: ${applicationId}\nScheme: ${schemeCode}\nSubmission Time: ${formattedDate} IST\nSLA Mandate: 48-Hour Decision SLA\n\nYou can track the live status of your application on the VidyaSetu portal using your Application ID.\n\nMinistry of Tribal Affairs, Government of India`,
@@ -277,7 +283,7 @@ export async function sendApplicationStatusUpdateEmail({
   const demoNotice = isDemoRedirect ? ` [TEST FOR: ${toEmail}]` : '';
 
   const mailOptions = {
-    from: `"VidyaSetu (MoTA)" <${smtpEmail}>`,
+    from: smtpEmail,
     to: targetEmail,
     subject: `[VidyaSetu Status Update] ${statusTitle} - ${applicationId}${demoNotice}`,
     text: `Dear ${applicantName},\n\nThere is an important status update on your fellowship application (${applicationId}) for ${schemeTitle}.\n\nStatus: ${statusTitle}\nDetails: ${message}\n${remarks ? `Remarks: ${remarks}\n` : ''}${actionRequired ? `Action Required: ${actionRequired}\n` : ''}\nPlease log into the VidyaSetu student portal for full details.\n\nMinistry of Tribal Affairs, Government of India`,

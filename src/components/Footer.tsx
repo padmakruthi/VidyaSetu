@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useLanguage } from './LanguageContext';
 import { ShieldCheck, HeartHandshake, PhoneCall, Award, ExternalLink } from 'lucide-react';
 
+import { VidyasetuLogo } from './VidyasetuLogo';
+
 export function Footer() {
   const { lang } = useLanguage();
 
@@ -41,19 +43,8 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Col 1: Brand & Slogan */}
         <div className="space-y-3 md:col-span-1">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 rounded-full bg-amber-700 text-white font-serif font-black flex items-center justify-center text-xs border border-amber-300">
-              सत्य
-            </div>
-            <div>
-              <div className="font-black text-white text-sm">VIDYASETU (विद्यासेतु)</div>
-              <div className="text-[10px] text-slate-400">Ministry of Tribal Affairs</div>
-            </div>
-          </div>
-          <p className="text-[11px] text-amber-300 font-medium italic">
-            “Har Vidyarthi Ka, Safalta Ka Marg”
-          </p>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
+          <VidyasetuLogo size="md" variant="vertical" showSlogan={true} theme="dark" lang={lang} />
+          <p className="text-[11px] text-slate-400 leading-relaxed text-center sm:text-left mt-2">
             AI-Enabled Lifecycle Scholarship & Fellowship Management Engine for Scheduled Tribes,
             eliminating clerical backlogs with 48-Hour sovereign verification.
           </p>
